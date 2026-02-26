@@ -181,7 +181,6 @@ function CourseCard({ course }) {
                 </svg>
               )}
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed">{course.description}</p>
           </div>
         </div>
 
@@ -191,13 +190,10 @@ function CourseCard({ course }) {
             <span className="text-gray-500 font-medium">Progress</span>
             <span className="font-bold" style={{ color: course.isUnlocked ? course.color : '#9CA3AF' }}>{progressPercent}%</span>
           </div>
-          <div className="w-full bg-gray-100 rounded-full h-2">
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-2 rounded-full transition-all duration-500"
-              style={{ 
-                width: `${progressPercent}%`,
-                backgroundColor: course.color 
-              }}
+              className="h-full rounded-full bg-[#0F766E]"
+              style={{ width: `${module.progress}%` }}
             />
           </div>
         </div>

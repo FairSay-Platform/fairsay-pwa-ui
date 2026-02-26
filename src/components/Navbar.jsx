@@ -72,7 +72,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className={`px-6 py-3 sticky top-0 z-50 transition-all duration-700 ${
+    <header className={`px-6 py-2 sticky top-0 z-50 transition-all duration-700 ${
       scrolled 
         ? 'bg-[#1E3A8A] dark:bg-[#1E3A8A] shadow-lg border-b border-[#1E3A8A]' 
         : 'bg-white dark:bg-dark-bg-secondary border-b border-[#E5E7EB] dark:border-gray-200'
