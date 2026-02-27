@@ -28,7 +28,6 @@ import AdminComplaints from './pages/admin/AdminComplaints';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminSecurity from './pages/admin/AdminSecurity';
 import ComplaintFeedback from './pages/ComplaintFeedback';
-import AnonymousReport from './pages/AnonymousReport';
 
 function App() {
   return (
@@ -36,7 +35,6 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-
           {/* Authentication Routes */}
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
@@ -47,7 +45,7 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+              <ProtectedRoutes>
                 <Dashboard />
               </ProtectedRoutes>
             }
@@ -79,6 +77,23 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
+          {/* User Profile Management */}
+          <Route path="/profile" element={
+            <ProtectedRoutes>
+              <Profile />
+            </ProtectedRoutes>
+          } />
+          <Route path="/profile/settings" element={
+            <ProtectedRoutes>
+              <ProfileSettings />
+            </ProtectedRoutes>
+          } />
+          <Route path="/profile/delete" element={
+            <ProtectedRoutes>
+              <DeleteAccount />
+            </ProtectedRoutes>
+          } />
 
           {/* Complaint Management - Requires Profile Verification */}
           <Route

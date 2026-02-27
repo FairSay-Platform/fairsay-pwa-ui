@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "../../components/AdminLayout";
 
+//Mock data 
 const activityLogs = [
   { user: "Admin User", action: "Login Success", ip: "192.168.1.1", time: "10:45 AM", status: "SUCCESS" },
   { user: "Sarah Jenkins", action: "Accessed Complaint #C-005", ip: "10.0.0.4", time: "10:30 AM", status: "INFO" },
@@ -37,9 +38,15 @@ function Toggle({ enabled, onChange }) {
 
 export default function AdminSecurity() {
   const [tab, setTab] = useState("activity");
-  const [twoFactor, setTwoFactor] = useState(true);
-  const [ipWhitelist, setIpWhitelist] = useState(false);
-  const [autoLogout, setAutoLogout] = useState(true);
+  
+  // Persist settings to local storage
+  const [twoFactor, setTwoFactor] = useState(() => JSON.parse(localStorage.getItem('admin_2fa') ?? "true"));
+  const [ipWhitelist, setIpWhitelist] = useState(() => JSON.parse(localStorage.getItem('admin_ip') ?? "false"));
+  const [autoLogout, setAutoLogout] = useState(() => JSON.parse(localStorage.getItem('admin_logout') ?? "true"));
+
+  useEffect(() => localStorage.setItem('admin_2fa', JSON.stringify(twoFactor)), [twoFactor]);
+  useEffect(() => localStorage.setItem('admin_ip', JSON.stringify(ipWhitelist)), [ipWhitelist]);
+  useEffect(() => localStorage.setItem('admin_logout', JSON.stringify(autoLogout)), [autoLogout]);
 
   return (
     <AdminLayout>

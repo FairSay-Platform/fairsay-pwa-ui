@@ -44,6 +44,7 @@ export const SEARCH_CATEGORIES = [
 
 //Added - Priority list
 export const PRIORITY_LIST = [
+  { id: 'low', label: 'Low Priority' },
   { id: 'medium', label: 'Medium Priority' },
   { id: 'high', label: 'High Priority' },
   {id: 'critical', label: 'Critical Priority' }

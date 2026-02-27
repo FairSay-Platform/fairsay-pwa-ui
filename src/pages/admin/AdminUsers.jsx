@@ -1,23 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "../../components/AdminLayout";
-
-const users = [
-  { name: "John Doe", email: "john@example.com", role: "User", status: "Active", joined: "Jan 15, 2024" },
-  { name: "Admin User", email: "admin@fairsay.com", role: "Admin", status: "Active", joined: "Jan 01, 2024" },
-  { name: "Sarah Jenkins", email: "sarah.j@company.com", role: "Moderator", status: "Active", joined: "Feb 03, 2024" },
-  { name: "Mike Ross", email: "mike.ross@legal.com", role: "User", status: "Suspended", joined: "Feb 10, 2024" },
-  { name: "Emily Clark", email: "emily.c@tech.com", role: "User", status: "Active", joined: "Feb 12, 2024" },
-];
+import { fetchAllUsersAdmin, updateUserRoleAdmin, verifyUserAdmin, getInitials } from "../../utils/logic-helpers";
+import { useAppContext } from "../../context/AppContext";
 
 const roleStyles = {
-  Admin: "text-purple-700",
-  Moderator: "text-blue-600",
-  User: "text-gray-600",
+  admin: "text-purple-700",
+  moderator: "text-blue-600",
+  user: "text-gray-600",
 };
-
-function getInitial(name) {
-  return name.charAt(0).toUpperCase();
-}
 
 const avatarColors = {
   J: "bg-blue-500",
@@ -28,12 +18,44 @@ const avatarColors = {
 };
 
 export default function AdminUsers() {
+  const { showAlert } = useAppContext();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  const filtered = users.filter((u) =>
-    u.name.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    const loadUsers = async () => {
+      setLoading(true);
+      const res = await fetchAllUsersAdmin();
+      if (res.success) setUsers(res.data);
+      setLoading(false);
+    };
+    loadUsers();
+  }, []);
+
+  const handleRoleChange = async (userId, newRole) => {
+    const res = await updateUserRoleAdmin(userId, newRole);
+    if (res.success) {
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      showAlert("Role updated!", "info");
+    }
+  };
+
+  const handleVerifyUser = async (userId) => {
+    const res = await verifyUserAdmin(userId);
+    if (res.success) {
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isVerified: true } : u));
+      showAlert("User verified successfully!", "success");
+    } else {
+      showAlert("Failed to verify user.", "error");
+    }
+  };
+
+  const filtered = users.filter((u) => {
+    const fullName = `${u.first_name || u.firstName || ""} ${u.last_name || u.lastName || ""}`.trim();
+    return fullName.toLowerCase().includes(search.toLowerCase()) ||
+           (u.email && u.email.toLowerCase().includes(search.toLowerCase()));
+  });
 
   return (
     <AdminLayout>
@@ -43,15 +65,6 @@ export default function AdminUsers() {
             <h1 className="font-poppins text-2xl font-bold text-gray-900">User Management</h1>
             <p className="text-gray-500 text-sm mt-0.5">Manage user accounts and access roles</p>
           </div>
-          <button className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#0F766E] text-white font-medium text-sm hover:opacity-90 transition-opacity shrink-0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="8.5" cy="7" r="4" stroke="white" strokeWidth="2"/>
-              <line x1="20" y1="8" x2="20" y2="14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="23" y1="11" x2="17" y2="11" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-            Add New User
-          </button>
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -72,57 +85,75 @@ export default function AdminUsers() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100">
-                  {["User", "Role", "Status", "Joined Date", "Actions"].map((h) => (
+                  {["User", "Role", "Status", "Actions"].map((h) => (
                     <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map((u) => {
-                  const initial = getInitial(u.name);
+                  const fullName = `${u.first_name || u.firstName || ""} ${u.last_name || u.lastName || ""}`.trim() || "Unknown User";
+                  const initial = getInitials({ firstName: u.first_name || u.firstName, lastName: u.last_name || u.lastName }).charAt(0) || "U";
                   const avatarBg = avatarColors[initial] ?? "bg-gray-400";
+                  const currentRole = (u.role || "user").toLowerCase();
+
                   return (
-                    <tr key={u.email} className="hover:bg-gray-50 transition-colors">
+                    <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className={`w-9 h-9 rounded-full ${avatarBg} flex items-center justify-center text-white text-sm font-bold shrink-0`}>
                             {initial}
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900 text-sm">{u.name}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-gray-900 text-sm">{fullName}</p>
+                              {u.isVerified && (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" title="Verified Employee">
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              )}
+                            </div>
                             <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                               {u.email}
                             </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className={`text-sm font-medium ${roleStyles[u.role]}`}>{u.role}</span>
+                        <select 
+                          value={currentRole} 
+                          onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                          className={`text-sm font-medium border-0 bg-transparent cursor-pointer focus:ring-0 ${roleStyles[currentRole] || roleStyles['user']} capitalize`}
+                        >
+                          <option className="text-gray-900" value="user">User</option>
+                          <option className="text-gray-900" value="moderator">Moderator</option>
+                          <option className="text-gray-900" value="admin">Admin</option>
+                        </select>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
-                        {u.status === "Suspended" ? (
-                          <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-semibold">{u.status}</span>
+                        {u.isVerified ? (
+                          <span className="text-green-600 text-sm font-medium">Active (Verified)</span>
                         ) : (
-                          <span className="text-green-600 text-sm font-medium">{u.status}</span>
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs font-semibold">Pending Verification</span>
                         )}
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="1.5"/></svg>
-                          {u.joined}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <button className="text-gray-400 hover:text-gray-600 transition-colors p-1">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>
-                        </button>
+                        {!u.isVerified && (
+                          <button 
+                            onClick={() => handleVerifyUser(u.id)}
+                            className="text-xs font-semibold px-3 py-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors border border-green-200"
+                          >
+                            Verify
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+            {loading && <p className="p-4 text-center text-gray-500 text-sm">Loading users...</p>}
+            {!loading && filtered.length === 0 && <p className="p-4 text-center text-gray-500 text-sm">No users found.</p>}
           </div>
         </div>
       </div>

@@ -1,9 +1,39 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import Logo from "../components/Logo";
-import { wageHourLessons, wageHourQuiz } from "../data/courses";
+import Navbar from "../components/Navbar";
+import { 
+  courses,
+  workplaceHarassmentLessons, workplaceHarassmentQuiz,
+  discriminationLawsLessons, discriminationLawsQuiz,
+  complaintProceduresLessons, complaintProceduresQuiz,
+  wageHourLessons, wageHourQuiz,
+  retaliationProtectionLessons, retaliationProtectionQuiz
+} from "../data/courses";
 import { useAppContext } from "../context/AppContext";
-import { completeCourse, getCourseProgress } from "../utils/logic-helpers";
+import { completeCourse, getCourseProgress, getNextCourse } from "../utils/logic-helpers";
+
+// Helpers to grab the correct content based on the URL parameter
+const getDetailedLessons = (id) => {
+  switch (id) {
+    case "workplace-harassment": return workplaceHarassmentLessons;
+    case "discrimination-laws": return discriminationLawsLessons;
+    case "complaint-procedures": return complaintProceduresLessons;
+    case "wage-hour": return wageHourLessons;
+    case "retaliation-protection": return retaliationProtectionLessons;
+    default: return workplaceHarassmentLessons;
+  }
+};
+
+const getDetailedQuiz = (id) => {
+  switch (id) {
+    case "workplace-harassment": return workplaceHarassmentQuiz;
+    case "discrimination-laws": return discriminationLawsQuiz;
+    case "complaint-procedures": return complaintProceduresQuiz;
+    case "wage-hour": return wageHourQuiz;
+    case "retaliation-protection": return retaliationProtectionQuiz;
+    default: return workplaceHarassmentQuiz;
+  }
+};
 
 export default function Quiz() {
   const { courseId } = useParams();
@@ -14,9 +44,16 @@ export default function Quiz() {
   const [quizState, setQuizState] = useState("taking");
   const [hasPassedBefore, setHasPassedBefore] = useState(false);
 
-  const courseId_ = courseId || "wage-hour";
+  const courseId_ = courseId || "workplace-harassment";
   
-  // Dynamically calculate progress based on the current course
+  // Dynamically load course info
+  const course = courses.find(c => c.id === courseId_);
+  const courseTitle = course?.title || "Course Quiz";
+  const lessons = getDetailedLessons(courseId_);
+  const quiz = getDetailedQuiz(courseId_);
+  const nextCourseId = getNextCourse(courseId_);
+  
+  // Calculate progress based on the current course
   const progress = getCourseProgress(courseId_);
 
   useEffect(() => {
@@ -36,13 +73,14 @@ export default function Quiz() {
     if (Object.keys(answers).length < quiz.length) return;
     setQuizState("submitted");
     
-    // Calculate Score
-    const finalScore = wageHourQuiz.filter((q) => answers[q.id] === q.correctIndex).length;
-    const finalScorePct = Math.round((finalScore / wageHourQuiz.length) * 100);
+    // Calculate Score dynamically
+    const finalScore = quiz.filter((q) => answers[q.id] === q.correctIndex).length;
+    const finalScorePct = Math.round((finalScore / quiz.length) * 100);
     
     // If they pass, officially complete the course!
     if (finalScorePct >= 80) {
       completeCourse(courseId_, finalScorePct, user?.id);
+      setHasPassedBefore(true);
     }
   };
 
@@ -114,7 +152,7 @@ export default function Quiz() {
                   <div className="flex-1 min-w-0">
                     <div className="font-medium leading-snug">Final Quiz</div>
                     <div className={`flex items-center gap-1 mt-0.5 text-xs ${hasPassedBefore ? 'text-green-100' : 'text-red-200'}`}>
-                      4 questions
+                      {quiz.length} questions
                     </div>
                   </div>
                 </div>
@@ -261,7 +299,7 @@ export default function Quiz() {
                     </Link>
                     <button
                       onClick={handleSubmit}
-                      disabled={Object.keys(answers).length < wageHourQuiz.length}
+                      disabled={Object.keys(answers).length < quiz.length}
                       className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1E3A8A] text-white font-semibold text-sm hover:bg-[#1a3278] transition-all shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       Submit Quiz

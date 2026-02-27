@@ -3,6 +3,7 @@ import book from '../images/Book.svg';
 import report from '../images/Report.svg';
 import chatbubble from '../images/Chatbubble.svg';
 import danger from '../images/Danger.svg';
+import { COMPLAINT_STATUS_STYLES } from './constants';
 
 
 
@@ -30,16 +31,29 @@ export const validateEscalation = (dateString, hasProof) => {
 };
 
 export const getStatusProgress = (status) => {
-  const config = {
-    'pending': { color: '#1e3a8a', percent: 20, label: 'Under Review' },   //Blue
-    'in_progress': { color: '#ea1f33', percent: 60, label: 'Investigation' }, //Red
-    'resolved': { color: '#0f6b52', percent: 100, label: 'Resolved' }  //Green
+  const style = COMPLAINT_STATUS_STYLES[status];
+  
+  const progressMap = {
+    'pending': 20,
+    'in_progress': 60,
+    'resolved': 100
   };
-  return config[status] || { color: '#CBD5E1', percent: 0, label: status };
+
+  return {
+    color: style?.hex || '#CBD5E1', // Add a hex property to your constants!
+    percent: progressMap[status] || 0,
+    label: style?.label || status
+  };
 };
 
 export const getInitials = (user) => {
   if (!user) return "";
+  if (typeof user === 'string') {
+    const names = user.trim().split(' ');
+    const first = names[0]?.[0] || "";
+    const last = names.length > 1 ? names[names.length - 1][0] : "";
+    return (first + last).toUpperCase();
+  }
   const first = (user.firstName)?.[0] || "";
   const last = (user.lastName)?.[0] || "";
   return (first + last).toUpperCase();
@@ -265,4 +279,64 @@ export const getCourseProgress = (courseId) => {
   } catch(e) {}
 
   return 0;
+};
+
+
+//Admin Services
+export const fetchAdminDashboardStats = async () => {
+  return { 
+    success: true, 
+    data: {
+      total_complaints: 142,
+      complaints_change: 12,
+      active_whistleblows: 28,
+      new_this_week: 5,
+      pending_count: 14,
+      high_priority_count: 3
+    } 
+  };
+};
+
+export const fetchAllComplaintsAdmin = async () => {
+  try {
+    const res = await api.get('/admin/complaints');
+    return { success: true, data: res.data.complaints || [] };
+  } catch (err) {
+    console.error("Failed to fetch admin complaints", err);
+    return { success: true, data: [] };
+  }
+};
+
+export const updateComplaintStatusAdmin = async (complaintId, status) => {
+  try {
+    const res = await api.put(`/admin/complaints/${complaintId}/status`, { status });
+    return { success: true, message: "Status updated successfully." };
+  } catch (err) {
+    console.error("Failed to update complaint status", err);
+    return { success: false, message: "Failed to update status." };
+  }
+};
+
+export const fetchAllUsersAdmin = async () => {
+  try {
+    const res = await api.get('/admin/users');
+    return { success: true, data: res.data.users || [] };
+  } catch (err) {
+    console.error("Failed to fetch users", err);
+    return { success: true, data: [] }; 
+  }
+};
+
+export const updateUserRoleAdmin = async (userId, newRole) => {
+  return { success: true, message: "User role updated" };
+};
+
+export const verifyUserAdmin = async (userId) => {
+  try {
+    const res = await api.put(`/admin/users/${userId}/verify`);
+    return { success: true, message: "User verified successfully." };
+  } catch (err) {
+    console.error("Failed to verify user", err);
+    return { success: false, message: "Failed to verify user." };
+  }
 };

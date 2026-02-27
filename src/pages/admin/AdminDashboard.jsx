@@ -1,58 +1,7 @@
+import { useState, useEffect } from "react";
 import AdminLayout from "../../components/AdminLayout";
+import { fetchAdminDashboardStats } from "../../utils/logic-helpers";
 
-const stats = [
-  {
-    label: "Total Complaints",
-    value: "1,284",
-    change: "+12% from last month",
-    changeUp: true,
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M14 2V8H20" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    label: "Active Whistleblows",
-    value: "42",
-    change: "+4 new this week",
-    changeUp: true,
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" stroke="#9CA3AF" strokeWidth="1.5"/>
-        <path d="M12 6V12L16 14" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    label: "Pending Review",
-    value: "18",
-    subLabel: "High Priority: 5",
-    highPriority: true,
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M12 9V13" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round"/>
-        <path d="M12 17H12.01" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    label: "Total Users",
-    value: "15.4k",
-    change: "+120 new users today",
-    changeUp: true,
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <circle cx="9" cy="7" r="4" stroke="#9CA3AF" strokeWidth="1.5"/>
-        <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-];
 
 function ComplaintTrendsChart() {
   const width = 400;
@@ -186,6 +135,70 @@ const activities = [
 ];
 
 export default function AdminDashboard() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      const res = await fetchAdminDashboardStats();
+      if (res.success) setData(res.data);
+    };
+    loadStats();
+  }, []);
+
+  const dynamicStats = [
+    {
+      label: "Total Complaints",
+      value: data?.total_complaints || "0",
+      change: `+${data?.complaints_change || 0}% from last month`,
+      changeUp: true,
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M14 2V8H20" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ),
+    },
+    {
+      label: "Active Whistleblows",
+      value: data?.active_whistleblows || "0",
+      change: `+${data?.new_this_week || 0} new this week`,
+      changeUp: true,
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#9CA3AF" strokeWidth="1.5"/>
+          <path d="M12 6V12L16 14" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      ),
+    },
+    {
+      label: "Pending Review",
+      value: data?.pending_count || "0",
+      subLabel: `High Priority: ${data?.high_priority_count || 0}`,
+      highPriority: true,
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 9V13" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M12 17H12.01" stroke="#EF4444" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      ),
+    },
+    {
+      label: "Total Users",
+      value: "15.4k", 
+      change: "+120 new users today",
+      changeUp: true,
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="9" cy="7" r="4" stroke="#9CA3AF" strokeWidth="1.5"/>
+          <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <AdminLayout>
       <div className="p-4 sm:p-6 space-y-6">
@@ -195,7 +208,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {stats.map((s) => (
+          {dynamicStats.map((s) => (
             <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-5">
               <div className="flex items-start justify-between mb-3">
                 <p className="text-xs text-gray-500 font-medium">{s.label}</p>

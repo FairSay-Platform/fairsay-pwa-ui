@@ -7,7 +7,6 @@ import Navbar from "../components/Navbar";
 export default function AIAssistant() {
   const {user} = useAppContext();
   const messagesEndRef = useRef();
-  const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([
     {
       id: 1,

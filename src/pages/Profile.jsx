@@ -1,22 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getProgress } from '../utils/courseProgress';
+import { getCourseProgress } from '../utils/logic-helpers';
 import { courses } from '../data/courses';
 import Navbar from '../components/Navbar';
-
-const defaultProfile = {
-  firstName: "John",
-  lastName: "Divine",
-  email: "john.divine@techcorp.com",
-  phone: "+234 801 234 5678",
-  location: "Lagos, Nigeria",
-  company: "TechCorp Nigeria",
-  jobTitle: "Software Engineer",
-  department: "Engineering",
-  employeeId: "EMP-2024-001",
-  joinDate: "January 2024",
-  bio: "Passionate about workplace rights and ensuring fair treatment for all employees. Dedicated to continuous learning and professional development."
-};
+import { useAppContext } from '../context/AppContext'; // Imported Context!
 
 function InfoField({ icon, value, editing, name, onChange }) {
   return (
@@ -33,7 +20,7 @@ function InfoField({ icon, value, editing, name, onChange }) {
         />
       ) : (
         <span className="flex-1 text-sm text-gray-600 dark:text-dark-text-secondary font-inter">
-          {value}
+          {value || "Not provided"}
         </span>
       )}
     </div>
@@ -54,20 +41,58 @@ function ProgressBar({ percent, completed }) {
 }
 
 export default function Profile() {
-  const [profile, setProfile] = useState(defaultProfile);
+  const { user, updateUser } = useAppContext(); // Grab real user data
+  
+  // Map real user data, with fallbacks for missing fields
+  const [profile, setProfile] = useState({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    location: user?.location || "",
+    company: user?.company || "",
+    jobTitle: user?.jobTitle || "",
+    department: user?.department || "",
+    employeeId: user?.employeeId || "",
+    joinDate: user?.joinDate || "January 2024",
+    bio: user?.bio || ""
+  });
+
   const [editing, setEditing] = useState(false);
-  const [editData, setEditData] = useState(defaultProfile);
+  const [editData, setEditData] = useState(profile);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Sync state if user context loads slightly after component mount
+  useEffect(() => {
+    if (user) {
+      const userData = {
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        location: user.location || "",
+        company: user.company || "",
+        jobTitle: user.jobTitle || "",
+        department: user.department || "",
+        employeeId: user.employeeId || "",
+        joinDate: user.joinDate || "January 2024",
+        bio: user.bio || ""
+      };
+      setProfile(userData);
+      setEditData(userData);
+    }
+  }, [user]);
 
   // Get learning progress from courseProgress utility
-  const progress = getProgress();
+  const courseProgress = getCourseProgress();
   const learningProgress = courses.map((course) => {
-    const courseProgress = progress[course.id];
+    const progress = courseProgress[course.id] || {};
     return {
       name: course.title,
-      percent: courseProgress?.completed ? 100 : (courseProgress?.unlocked ? 60 : 0),
-      completed: courseProgress?.completed || false,
-      inProgress: courseProgress?.unlocked && !courseProgress?.completed,
-      locked: !courseProgress?.unlocked
+      percent: progress?.completed ? 100 : (progress?.unlocked ? 60 : 0),
+      completed: progress?.completed || false,
+      inProgress: progress?.unlocked && !progress?.completed,
+      locked: !progress?.unlocked
     };
   });
 
@@ -83,9 +108,15 @@ export default function Profile() {
     setEditData(profile);
   }
 
-  function handleSave() {
-    setProfile(editData);
-    setEditing(false);
+  async function handleSave() {
+    setIsSaving(true);
+    // Call the backend update function from AppContext
+    const success = await updateUser(editData);
+    if (success) {
+      setProfile(editData);
+      setEditing(false);
+    }
+    setIsSaving(false);
   }
 
   function handleChange(e) {
@@ -104,19 +135,13 @@ export default function Profile() {
             <div className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center text-center">
               <div className="relative mb-4">
                 <div className="w-20 h-20 rounded-full bg-[#1E3A8A] flex items-center justify-center text-white text-2xl font-bold font-poppins">
-                  {profile.firstName[0]}{profile.lastName[0]}
+                  {profile.firstName?.[0]}{profile.lastName?.[0]}
                 </div>
-                <button className="absolute bottom-0 right-0 w-7 h-7 bg-gray-700 dark:bg-gray-600 rounded-full flex items-center justify-center border-2 border-white dark:border-dark-bg-secondary">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
-                  </svg>
-                </button>
               </div>
               <h2 className="font-poppins font-bold text-xl text-gray-900 dark:text-dark-text-primary mb-1">
                 {profile.firstName} {profile.lastName}
               </h2>
-              <p className="text-gray-500 dark:text-dark-text-tertiary text-sm mb-3">{profile.jobTitle}</p>
+              <p className="text-gray-500 dark:text-dark-text-tertiary text-sm mb-3">{profile.jobTitle || 'Employee'}</p>
               <div className="flex gap-1 mb-5">
                 <div className="h-1 w-8 rounded-full bg-teal-600" />
                 <div className="h-1 w-8 rounded-full bg-blue-300" />
@@ -153,7 +178,7 @@ export default function Profile() {
                     </svg>
                     <span>Member Since</span>
                   </div>
-                  <span className="font-semibold text-gray-900 dark:text-dark-text-primary">Jan 2024</span>
+                  <span className="font-semibold text-gray-900 dark:text-dark-text-primary">{profile.joinDate}</span>
                 </div>
               </div>
 
@@ -239,7 +264,8 @@ export default function Profile() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={handleCancel}
-                      className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-dark-text-secondary text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      disabled={isSaving}
+                      className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-dark-text-secondary text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                     >
                       Cancel
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -249,14 +275,17 @@ export default function Profile() {
                     </button>
                     <button
                       onClick={handleSave}
-                      className="flex items-center gap-2 bg-[#1E3A8A] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-900 transition-colors"
+                      disabled={isSaving}
+                      className="flex items-center gap-2 bg-[#1E3A8A] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-900 transition-colors disabled:opacity-70"
                     >
-                      Save changes
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                        <polyline points="17 21 17 13 7 13 7 21"/>
-                        <polyline points="7 3 7 8 15 8"/>
-                      </svg>
+                      {isSaving ? "Saving..." : "Save changes"}
+                      {!isSaving && (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                          <polyline points="17 21 17 13 7 13 7 21"/>
+                          <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                      )}
                     </button>
                   </div>
                 )}
@@ -386,7 +415,9 @@ export default function Profile() {
                   className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-600 dark:text-dark-text-secondary dark:bg-dark-bg-tertiary font-inter outline-none resize-none focus:border-blue-400 transition-colors"
                 />
               ) : (
-                <p className="text-gray-600 dark:text-dark-text-secondary text-sm font-inter leading-relaxed">{profile.bio}</p>
+                <p className="text-gray-600 dark:text-dark-text-secondary text-sm font-inter leading-relaxed">
+                  {profile.bio || "No bio provided yet."}
+                </p>
               )}
             </section>
 

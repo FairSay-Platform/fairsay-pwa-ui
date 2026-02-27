@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getInitials } from "../utils/logic-helpers";
+import { useAppContext } from "../context/AppContext";
+import Logo from "./Logo";
 
 const navItems = [
   {
     label: "Dashboard",
-    path: "/admin",
+    path: "/admin/dashboard", // Fixed: Point to the specific dashboard route
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -50,8 +53,78 @@ const navItems = [
   },
 ];
 
+// Lifted Sidebar outside the layout to prevent re-render flickering
+const Sidebar = ({ user, handleLogout, isActive, setMobileOpen }) => (
+  <aside className="w-[185px] bg-[#1E3A8A] flex flex-col h-full shrink-0">
+    {/* Logo */}
+    <div className="px-5 pt-5 pb-4 border-b border-white/10">
+      <div className="items-center gap-2.5">
+        <Logo variant="light" />
+        <div>
+          <p className="text-blue-200 text-[10px] mt-0.5 font-medium uppercase tracking-tighter ml-12">Admin Portal</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Nav */}
+    <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      {navItems.map((item) => {
+        const active = isActive(item.path);
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            onClick={() => setMobileOpen(false)}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              active
+                ? "bg-white text-[#1E3A8A]"
+                : "text-blue-100 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            <span className={active ? "text-[#1E3A8A]" : "text-blue-200"}>{item.icon}</span>
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+
+    {/* Dynamic Current User Display */}
+    <div className="mx-3 mb-3 p-3 bg-white/10 rounded-xl border border-white/5">
+      <p className="text-blue-300 text-[10px] font-medium mb-2 uppercase tracking-wider">Active Session</p>
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0 text-xs font-bold text-white border border-white/10">
+          {getInitials(user)}
+        </div>
+        <div className="min-w-0">
+          <p className="text-white text-xs font-semibold truncate">
+            {user?.firstName} {user?.lastName}
+          </p>
+          <p className="text-blue-300 text-[10px] capitalize">{user?.isAdmin ? 'Administrator' : (user?.role || 'Staff')}</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Sign out */}
+    <div className="px-3 pb-5">
+      <button
+        onClick={handleLogout}
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-blue-200 hover:text-white hover:bg-red-500/20 hover:border-red-500/30 border border-transparent text-sm font-medium transition-all"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <polyline points="16,17 21,12 16,7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+);
+
 export default function AdminLayout({ children }) {
+  const { user, logout } = useAppContext();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (path) => {
@@ -59,86 +132,23 @@ export default function AdminLayout({ children }) {
     return location.pathname.startsWith(path);
   };
 
-  const Sidebar = () => (
-    <aside className="w-[185px] bg-[#1E3A8A] flex flex-col h-full shrink-0">
-      {/* Logo */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/10">
-        <div className="flex items-center gap-2.5">
-          <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M33.3327 21.6661C33.3327 29.9994 27.4993 34.1661 20.566 36.5828C20.203 36.7058 19.8086 36.6999 19.4493 36.5661C12.4993 34.1661 6.66602 29.9994 6.66602 21.6661V9.99945C6.66602 9.55742 6.84161 9.1335 7.15417 8.82094C7.46673 8.50838 7.89065 8.33278 8.33268 8.33278C11.666 8.33278 15.8327 6.33278 18.7327 3.79945C19.0858 3.49778 19.5349 3.33203 19.9993 3.33203C20.4638 3.33203 20.9129 3.49778 21.266 3.79945C24.1827 6.34945 28.3327 8.33278 31.666 8.33278C32.108 8.33278 32.532 8.50838 32.8445 8.82094C33.1571 9.1335 33.3327 9.55742 33.3327 9.99945V21.6661Z" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <div>
-            <p className="font-poppins font-bold text-white text-base leading-none">FairSay</p>
-            <p className="text-blue-200 text-[10px] mt-0.5">Admin Portal</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const active = isActive(item.path);
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                active
-                  ? "bg-white text-[#1E3A8A]"
-                  : "text-blue-100 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              <span className={active ? "text-[#1E3A8A]" : "text-blue-200"}>{item.icon}</span>
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Current User */}
-      <div className="mx-3 mb-3 p-3 bg-white/10 rounded-xl">
-        <p className="text-blue-300 text-[10px] font-medium mb-2">Current User</p>
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center shrink-0 text-xs font-bold text-gray-600">
-            AD
-          </div>
-          <div>
-            <p className="text-white text-xs font-semibold">Admin User</p>
-            <p className="text-blue-300 text-[10px]">Super Admin</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Sign out */}
-      <div className="px-3 pb-5">
-        <Link
-          to="/sign-in"
-          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 text-sm font-medium transition-all"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <polyline points="16,17 21,12 16,7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-          Sign Out
-        </Link>
-      </div>
-    </aside>
-  );
+  const handleLogout = () => {
+    logout();
+    navigate("/sign-in");
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F0F4F8] font-sans">
       {/* Desktop sidebar */}
       <div className="hidden md:flex flex-col h-full">
-        <Sidebar />
+        <Sidebar user={user} handleLogout={handleLogout} isActive={isActive} setMobileOpen={setMobileOpen} />
       </div>
 
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="w-[185px] h-full flex flex-col">
-            <Sidebar />
+            <Sidebar user={user} handleLogout={handleLogout} isActive={isActive} setMobileOpen={setMobileOpen} />
           </div>
           <div className="flex-1 bg-black/40" onClick={() => setMobileOpen(false)} />
         </div>
@@ -172,18 +182,20 @@ export default function AdminLayout({ children }) {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M13.73 21A2 2 0 0 1 10.27 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
-            {/* Avatar */}
+            {/* Avatar - Updated to be dynamic */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-[#1E3A8A] flex items-center justify-center text-white text-xs font-bold">
-                AD
+                {getInitials(user)}
               </div>
-              <span className="text-sm font-medium text-gray-700 hidden sm:block">Admin User</span>
+              <span className="text-sm font-medium text-gray-700 hidden sm:block">
+                {user?.firstName} {user?.lastName}
+              </span>
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-[#F8FAFC] p-6">
           {children}
         </main>
       </div>

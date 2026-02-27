@@ -1,9 +1,29 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Logo from "../components/Logo";
-import { wageHourLessons } from "../data/courses";
+import Navbar from "../components/Navbar";
+import { 
+  courses,
+  workplaceHarassmentLessons,
+  discriminationLawsLessons,
+  complaintProceduresLessons,
+  wageHourLessons,
+  retaliationProtectionLessons
+} from "../data/courses";
 import { useAppContext } from "../context/AppContext";
-import { logActivity } from "../utils/logic-helpers";
+import { logActivity, isCourseUnlocked } from "../utils/logic-helpers";
 import { useState, useEffect } from "react";
+
+// Helper to grab the correct detailed lesson content based on the URL parameter
+const getDetailedLessons = (id) => {
+  switch (id) {
+    case "workplace-harassment": return workplaceHarassmentLessons;
+    case "discrimination-laws": return discriminationLawsLessons;
+    case "complaint-procedures": return complaintProceduresLessons;
+    case "wage-hour": return wageHourLessons;
+    case "retaliation-protection": return retaliationProtectionLessons;
+    default: return workplaceHarassmentLessons;
+  }
+};
 
 export default function Lesson() {
   const { courseId, lessonId } = useParams();
@@ -11,7 +31,6 @@ export default function Lesson() {
   const { user, logout } = useAppContext();
   
   const currentId = parseInt(lessonId || "1");
-  
   const courseId_ = courseId || "workplace-harassment";
   
   // Check if course is unlocked
@@ -22,8 +41,9 @@ export default function Lesson() {
     }
   }, [courseId_, navigate]);
   
-  const course = courseData[courseId_];
-  const lessons = course?.lessons || workplaceHarassmentLessons;
+  // Dynamically load the course summary and the detailed lessons
+  const course = courses.find(c => c.id === courseId_);
+  const lessons = getDetailedLessons(courseId_);
   const courseTitle = course?.title || "Course";
   const lesson = lessons.find((l) => l.id === currentId);
 
@@ -31,9 +51,9 @@ export default function Lesson() {
   const [completedLessons, setCompletedLessons] = useState([]);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId}`) || '[]');
+    const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId_}`) || '[]');
     setCompletedLessons(stored);
-  }, [courseId, currentId]);
+  }, [courseId_, currentId]);
 
   if (!lesson) {
     return (
@@ -71,8 +91,8 @@ export default function Lesson() {
     );
   }
 
-  // Calculate real progress dynamically!
-  const progress = Math.round((completedLessons.length / wageHourLessons.length) * 100);
+  // Calculate real progress dynamically based on current module's length!
+  const progress = Math.round((completedLessons.length / lessons.length) * 100);
   const isCurrentLessonCompleted = completedLessons.includes(lesson.id);
 
   const handlePrev = () => {
@@ -84,21 +104,21 @@ export default function Lesson() {
 
   const handleNext = () => {
     // 1. Mark this lesson as complete in local storage
-    const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId}`) || '[]');
+    const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId_}`) || '[]');
     if (!stored.includes(currentId)) {
       const updatedLessons = [...stored, currentId];
-      localStorage.setItem(`fs_course_${courseId}`, JSON.stringify(updatedLessons));
+      localStorage.setItem(`fs_course_${courseId_}`, JSON.stringify(updatedLessons));
       setCompletedLessons(updatedLessons);
       
       // 2. Log this action so it appears on the Dashboard timeline!
-      if (typeof logActivity === 'function') {
-        logActivity('Lesson Completed', `Finished: ${lesson.title}`);
+      if (typeof logActivity === 'function' && user?.id) {
+        logActivity(user.id, 'Lesson Completed', `Finished: ${lesson.title}`);
       }
     }
 
-    // 3. Navigate forward
-    if (currentId < wageHourLessons.length) {
-      navigate(`/learning/lesson/${courseId}/${currentId + 1}`);
+    // 3. Navigate forward based on dynamic length
+    if (currentId < lessons.length) {
+      navigate(`/learning/lesson/${courseId_}/${currentId + 1}`);
     } else {
       navigate(`/learning/quiz/${courseId_}`);
     }
@@ -219,12 +239,12 @@ export default function Lesson() {
                 Wage & Hour Rights
               </h2>
               <nav className="space-y-2">
-                {wageHourLessons.map((l) => {
+                {lessons.map((l) => {
                   const isCompleted = completedLessons.includes(l.id);
                   return (
                     <Link
                       key={l.id}
-                      to={`/learning/lesson/${courseId}/${l.id}`}
+                      to={`/learning/lesson/${courseId_}/${l.id}`}
                       className={`flex items-start gap-2.5 p-2.5 rounded-xl transition-all text-sm ${
                         l.id === currentId
                           ? "bg-[#1E3A8A] text-white"
@@ -262,7 +282,7 @@ export default function Lesson() {
 
                 {/* Final Quiz item */}
                 <Link
-                  to={`/learning/quiz/${courseId}`}
+                  to={`/learning/quiz/${courseId_}`}
                   className="flex items-start gap-2.5 p-2.5 rounded-xl hover:bg-gray-50 text-gray-400 transition-all text-sm"
                 >
                   <div className="flex-shrink-0 mt-0.5">
@@ -283,7 +303,7 @@ export default function Lesson() {
                   <div className="flex-1 min-w-0">
                     <div className="font-medium leading-snug">Final Quiz</div>
                     <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-400">
-                      4 questions
+                      Take to pass module
                     </div>
                   </div>
                 </Link>
@@ -324,9 +344,7 @@ export default function Lesson() {
                   <line x1="8" y1="21" x2="16" y2="21" />
                   <line x1="12" y1="17" x2="12" y2="21" />
                 </svg>
-                <span>
-                  Lesson {lesson.id} of {wageHourLessons.length}
-                </span>
+                <span>Lesson {lesson.id} of {lessons.length}</span>
                 <span>•</span>
                 <svg
                   width="14"
@@ -461,19 +479,8 @@ export default function Lesson() {
                   onClick={handleNext}
                   className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#1E3A8A] text-white font-semibold text-sm hover:bg-[#1a3278] transition-all shadow-md hover:shadow-lg"
                 >
-                  {currentId < wageHourLessons.length
-                    ? "Next Lesson"
-                    : "Take Final Quiz"}
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+                  {currentId < lessons.length ? "Next Lesson" : "Take Final Quiz"}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12" />
                     <polyline points="12 5 19 12 12 19" />
                   </svg>

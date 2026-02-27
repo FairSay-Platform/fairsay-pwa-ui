@@ -12,8 +12,6 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-
-  //
   useEffect(() => {
     localStorage.setItem('fs_notifications', JSON.stringify(notifications));
   }, [notifications]);
@@ -61,15 +59,13 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-
-  //To trigger and show alerts after 4 seconds
+  // To trigger and show alerts after 4 seconds
   const showAlert = (message, type = 'info') => {
     setAlert({ message, type });
     setTimeout(() => setAlert(null), 4000);
   };
 
-
-  //Sign-up
+  // Sign-up
   const register = async (userData) => {
     try {
       const backendData = {
@@ -80,7 +76,6 @@ export const AppProvider = ({ children }) => {
       };
 
       const res = await api.post('/auth/register', backendData);
-
       const { token, user: userBackendData } = res.data;
 
       if (token) {
@@ -90,6 +85,8 @@ export const AppProvider = ({ children }) => {
           ...userBackendData,
           firstName: userBackendData.first_name,
           lastName: userBackendData.last_name,
+          // Attach admin flag dynamically
+          isAdmin: userBackendData.role === 'admin' || userBackendData.is_admin === true
         };
         setUser(normalizedUser);
 
@@ -104,8 +101,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-
-  //Login
+  // Login
   const login = async (email, password) => {
     try {
       const res = await api.post('/auth/login', { email, password});
@@ -115,6 +111,8 @@ export const AppProvider = ({ children }) => {
         ...userData, 
         firstName: userData.first_name,
         lastName: userData.last_name,
+        // Attach admin flag dynamically
+        isAdmin: userData.role === 'admin' || userData.is_admin === true
       };
 
       localStorage.setItem('fs_token', token);
@@ -125,15 +123,14 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  //Logout
+  // Logout
   const logout = () => {
     localStorage.removeItem('fs_token');
     localStorage.removeItem('fs_user');
     setUser(null);
   };
 
-
-  //To update user
+  // To update user
   const updateUser = async (updatedData) => {
     try {
       if (!user?.id?.toString().startsWith('dev-')) {
@@ -153,7 +150,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  //To attach token to axios headers when user state changes
+  // To attach token to axios headers when user state changes
   useEffect(() => {
     const token = localStorage.getItem('fs_token');
     if (token && token !== 'dev-bypass-token-123') {
@@ -163,7 +160,7 @@ export const AppProvider = ({ children }) => {
     }
   }, [user]);
 
-  //To check for existing user session on app load
+  // To check for existing user session on app load
   useEffect(() => {
     const checkSession = async () => {
       const token = localStorage.getItem('fs_token');
@@ -175,7 +172,9 @@ export const AppProvider = ({ children }) => {
           const normalized = {
             ...res.data.user,
             firstName: res.data.user.first_name,
-            lastName: res.data.user.last_name
+            lastName: res.data.user.last_name,
+            // Attach admin flag dynamically
+            isAdmin: res.data.user.role === 'admin' || res.data.user.is_admin === true
           };
           setUser(normalized);
         } catch (err) {
@@ -190,8 +189,53 @@ export const AppProvider = ({ children }) => {
     checkSession();
   }, []);
 
+  const devLogin = (persona) => {
+  const personas = {
+    admin: {
+      id: 'dev-admin-1',
+      firstName: 'Dev',
+      lastName: 'Admin',
+      email: 'admin@fairsay.dev',
+      role: 'admin',
+      isAdmin: true,
+      isVerified: true,
+      educated: true
+    },
+    whistleblower: {
+      id: 'dev-user-1',
+      firstName: 'John',
+      lastName: 'Whistleblower',
+      email: 'john@fairsay.dev',
+      role: 'user',
+      isAdmin: false,
+      isVerified: true,
+      educated: true
+    },
+    newbie: {
+      id: 'dev-user-2',
+      firstName: 'New',
+      lastName: 'User',
+      email: 'new@fairsay.dev',
+      role: 'user',
+      isAdmin: false,
+      isVerified: false,
+      educated: false
+    }
+  };
+
+  const selectedPersona = personas[persona];
+  if (selectedPersona) {
+    localStorage.setItem('fs_token', 'dev-bypass-token-123');
+    localStorage.setItem('fs_user', JSON.stringify(selectedPersona));
+    setUser(selectedPersona);
+    showAlert(`Logged in as ${selectedPersona.firstName} (Dev Mode)`, "success");
+    return { success: true };
+  }
+  return { success: false };
+};
+
   return (
-    <AppContext.Provider value={{ user, setUser, register, login, updateUser, loading, alert, showAlert, logout, notifications, addNotification, markAllAsRead }}>
+    <AppContext.Provider value={{ user, setUser, register, login, updateUser, loading, alert, showAlert, logout, notifications, addNotification, markAllAsRead, devLogin }}>
       {children}
     </AppContext.Provider>
   );

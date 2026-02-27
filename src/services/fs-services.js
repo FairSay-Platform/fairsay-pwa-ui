@@ -18,8 +18,10 @@ export const askFairSayAI = async (query) => {
   }
 };
 
-/*
-//Not needed as of now
+
+
+//For the complaint feedback form, using the linkvert scale
+
 export const submitFeedback = (complaintId, feedbackData) => {
   const allFeedback = JSON.parse(localStorage.getItem('fs_feedback') || '[]');
 
@@ -33,4 +35,4 @@ localStorage.setItem('fs_feedback', JSON.stringify([newReport, ...allFeedback]))
 
 return { success: true };
 
-}; */
+}; 

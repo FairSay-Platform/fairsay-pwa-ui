@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { useAppContext } from '../context/AppContext';
 
 // Toggle Component
 function Toggle({ checked, onChange }) {
@@ -77,7 +78,46 @@ function PasswordField({ label, placeholder, name }) {
 }
 
 // Account Tab
-function AccountTab({ editing, onEdit, onCancel, onSave }) {
+function AccountTab({ editing, onEdit, onCancel, onSave, isSaving, user }) {
+  const [editData, setEditData] = useState({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    username: user?.username || (user?.email ? user.email.split('@')[0] : ""),
+  });
+
+  useEffect(() => {
+    if (user && !editing) {
+      setEditData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        username: user.username || (user.email ? user.email.split('@')[0] : ""),
+      });
+    }
+  }, [user, editing]);
+
+  const handleChange = (e) => {
+    setEditData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSave = () => {
+    onSave(editData);
+  };
+
+  const handleCancel = () => {
+    setEditData({
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      username: user?.username || (user?.email ? user.email.split('@')[0] : ""),
+    });
+    onCancel();
+  };
+
   return (
     <div className="space-y-6">
       <section className="bg-white dark:bg-dark-bg-secondary rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
@@ -93,8 +133,9 @@ function AccountTab({ editing, onEdit, onCancel, onSave }) {
           ) : (
             <div className="flex items-center gap-3">
               <button
-                onClick={onCancel}
-                className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-dark-text-secondary text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                onClick={handleCancel}
+                disabled={isSaving}
+                className="flex items-center gap-1.5 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-dark-text-secondary text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
               >
                 Cancel
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -103,15 +144,18 @@ function AccountTab({ editing, onEdit, onCancel, onSave }) {
                 </svg>
               </button>
               <button
-                onClick={onSave}
-                className="flex items-center gap-2 bg-[#1E3A8A] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-900"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex items-center gap-2 bg-[#1E3A8A] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-900 disabled:opacity-70"
               >
-                Save changes
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                  <polyline points="17 21 17 13 7 13 7 21"/>
-                  <polyline points="7 3 7 8 15 8"/>
-                </svg>
+                {isSaving ? "Saving..." : "Save changes"}
+                {!isSaving && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                  </svg>
+                )}
               </button>
             </div>
           )}
@@ -125,7 +169,7 @@ function AccountTab({ editing, onEdit, onCancel, onSave }) {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                 </svg>
-                <input defaultValue="John" readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
+                <input name="firstName" value={editData.firstName} onChange={handleChange} readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
               </div>
             </div>
             <div>
@@ -134,7 +178,7 @@ function AccountTab({ editing, onEdit, onCancel, onSave }) {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
                 </svg>
-                <input defaultValue="Divine" readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
+                <input name="lastName" value={editData.lastName} onChange={handleChange} readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
               </div>
             </div>
           </div>
@@ -145,7 +189,7 @@ function AccountTab({ editing, onEdit, onCancel, onSave }) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
               </svg>
-              <input defaultValue="john.divine@techcorp.com" readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
+              <input name="email" value={editData.email} onChange={handleChange} readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
             </div>
           </div>
 
@@ -155,7 +199,7 @@ function AccountTab({ editing, onEdit, onCancel, onSave }) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
               </svg>
-              <input defaultValue="+234 801 234 5678" readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
+              <input name="phone" value={editData.phone} onChange={handleChange} readOnly={!editing} placeholder="Add phone number" className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
             </div>
           </div>
 
@@ -165,7 +209,7 @@ function AccountTab({ editing, onEdit, onCancel, onSave }) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
-              <input defaultValue="johndivine" readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
+              <input name="username" value={editData.username} onChange={handleChange} readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
             </div>
           </div>
 
@@ -516,8 +560,19 @@ function PrivacyTab() {
 
 // Main Component
 export default function ProfileSettings() {
+  const { user, updateUser } = useAppContext();
   const [activeTab, setActiveTab] = useState('account');
   const [editing, setEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveAccount = async (updatedData) => {
+    setIsSaving(true);
+    const success = await updateUser(updatedData);
+    if (success) {
+      setEditing(false);
+    }
+    setIsSaving(false);
+  };
 
   const tabItems = [
     {
@@ -593,10 +648,12 @@ export default function ProfileSettings() {
           <main className="flex-1">
             {activeTab === "account" && (
               <AccountTab
+                user={user}
                 editing={editing}
+                isSaving={isSaving}
                 onEdit={() => setEditing(true)}
                 onCancel={() => setEditing(false)}
-                onSave={() => setEditing(false)}
+                onSave={handleSaveAccount}
               />
             )}
             {activeTab === "security" && <SecurityTab />}

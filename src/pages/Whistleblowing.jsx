@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { submitComplaint } from "../utils/logic-helpers";
+import { COMPLAINT_CATEGORIES } from "../utils/constants";
 
 export default function Whistleblowing() {
   const navigate = useNavigate();
   const [showEducation, setShowEducation] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasWitnesses, setHasWitnesses] = useState(false);
   const [formData, setFormData] = useState({
     violationType: "",
     description: "",
@@ -13,19 +17,38 @@ export default function Whistleblowing() {
     evidenceFiles: [],
   });
 
-  const violationTypes = [
-    { value: "safety", label: "Safety Violations", icon: "⚠️" },
-    { value: "discrimination", label: "Discrimination", icon: "⚖️" },
-    { value: "harassment", label: "Harassment", icon: "🚫" },
-    { value: "wage-theft", label: "Wage Theft", icon: "💰" },
-    { value: "retaliation", label: "Retaliation", icon: "🛡️" },
-    { value: "other", label: "Other Violation", icon: "📋" },
-  ];
+  
+  const descCount = formData.description.trim().length;
+  const minDescCount = descCount >= 50;
 
-  const handleSubmit = (e) => {
+  const labelClass = "block text-base font-bold text-gray-900 mb-3";
+  const inputClass = "w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#DC2626] focus:border-transparent text-sm";
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate submission
-    navigate("/complaint-success");
+
+    if (!minDescCount) {
+      alert("Please provide a more detailed description (at least 50 characters).");
+      return;
+    }
+    
+    const combinedDescription = `Location: ${formData.location || 'Not specified'}\nDate: ${formData.dateOccurred || 'Not specified'}\nWitnesses: ${hasWitnesses ? 'Yes' : 'No'}\n\nDetails:\n${formData.description}`;
+
+    const result = await submitComplaint({
+      type: formData.violationType || 'OTHER',
+      title: formData.title,
+      description: combinedDescription,
+      isAnonymous: true
+    });
+
+    setIsSubmitting(false);
+
+    if (result.success) {
+      //To pass the tracking ID to the success page so they can save it
+      navigate("/complaint-success", { state: { trackingId: result.trackingId } });
+    } else {
+      alert("Submission failed. Please try again or contact support.");
+    }
   };
 
   const handleFileChange = (e) => {
@@ -161,65 +184,82 @@ export default function Whistleblowing() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Form */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Violation Type */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <label className="block text-base font-bold text-gray-900 mb-4">
-                    Type of Violation *
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {violationTypes.map((type) => (
-                      <button
-                        key={type.value}
-                        type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, violationType: type.value }))}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${
-                          formData.violationType === type.value
-                            ? "border-[#DC2626] bg-red-50"
-                            : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                        }`}
-                      >
-                        <span className="text-2xl mb-1.5">{type.icon}</span>
-                        <span className="text-xs font-semibold text-gray-700 text-center">{type.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              <div className="lg:col-span-2 space-y-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+             
+             <h2 className="font-poppins text-xl font-bold text-gray-900">Submit Anonymous Report</h2>
 
-                {/* Description */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <label className="block text-base font-bold text-gray-900 mb-3">
-                    Detailed Description *
+                  <div>
+                    <label className={labelClass}>Violation Category <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select 
+                        className={`${inputClass} appearance-none pr-10 focus:border-red-400`} 
+                        value={formData.violationType}
+                        onChange={(e) => setFormData(prev => ({ ...prev, violationType: e.target.value }))}
+                        required
+                      >
+                        <option value="" disabled>Select violation category</option>
+                        {COMPLAINT_CATEGORIES.map((c) => (
+                          <option key={c.value} value={c.value}> {c.label}</option>
+                        ))}
+                      </select>
+                      <svg className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Report Title <span className="text-red-500">*</span></label>
+                    <input 
+                      type="text" 
+                      placeholder="Brief summary of the violation" 
+                      className={inputClass}
+                      value={formData.title}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                      required 
+                    />
+                  </div>
+                   {/* Description */}
+                <div className="p-6">
+                  <label className="block text-base font-bold text-gray-900 mb-4">
+                    Detailed Description <span className="text-red-500">*</span>
                   </label>
                   <p className="text-sm text-gray-600 mb-4">
                     Provide as much detail as possible about what happened. Include dates, times, locations, and any witnesses if applicable.
                   </p>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                   onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, description: e.target.value }));
+                    }}
                     rows={6}
                     placeholder="Describe the violation in detail..."
                     className="w-full px-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#DC2626] focus:border-transparent resize-none text-sm"
                     required
                   />
+
+                   <div className="flex items-center justify-between mt-1.5">
+              <p className="text-xs text-gray-400">Tip: Be specific but avoid including information that could identify you</p>
+              <p className={`text-xs ${minDescCount ? 'text-gray-400' : 'text-red-500'}`}>{descCount}/50 minimum</p>
+            </div>
+
                 </div>
 
-                {/* Location and Date */}
+                {/* Location, Date, and Witnesses */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <label className="block text-base font-bold text-gray-900 mb-3">
+                  <div className="p-6">
+                    <label className="text-base font-bold text-gray-900 mb-3">
                       Location
                     </label>
                     <input
                       type="text"
                       value={formData.location}
                       onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
-                      placeholder="Office, department, or area"
+                      placeholder="e.g 3rd floor"
                       className="w-full px-5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#DC2626] focus:border-transparent text-sm"
                     />
                   </div>
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <label className="block text-base font-bold text-gray-900 mb-3">
+
+                  <div className=" p-6">
+                    <label className=" text-base font-bold text-gray-600 mb-3">
                       Date Occurred
                     </label>
                     <input
@@ -229,12 +269,25 @@ export default function Whistleblowing() {
                       className="w-full px-5 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#DC2626] focus:border-transparent text-sm"
                     />
                   </div>
+                
+
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={hasWitnesses}
+                      onChange={(e) => setHasWitnesses(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                    />
+                    <span className="text-sm text-gray-700 font-medium">Were there witnesses to this incident?</span>
+                  </label>
+                </div>
                 </div>
 
                 {/* Evidence Upload */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                   <label className="block text-base font-bold text-gray-900 mb-3">
-                    Evidence (Optional)
+                    Upload Supporting Evidence <span className="font-inter text-gray-400 text-xs ">(Optional)</span>
                   </label>
                   <p className="text-sm text-gray-600 mb-4">
                     Attach photos, documents, or other evidence. Files will be encrypted.
@@ -266,7 +319,7 @@ export default function Whistleblowing() {
                           <button
                             type="button"
                             onClick={() => removeFile(idx)}
-                            className="ml-2.7 text-red-600 hover:text-red-800"
+                            className="ml-3 text-red-600 hover:text-red-800"
                           >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <line x1="18" y1="6" x2="6" y2="18" />
@@ -277,13 +330,22 @@ export default function Whistleblowing() {
                       ))}
                     </div>
                   )}
+                  <p className="text-xs text-gray-400 mt-2">Remove any metadata from files that could identify you.</p>
                 </div>
-              </div>
+
+  {/* Important notice */}
+                <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-4">
+                  <p className="text-sm text-amber-800 leading-relaxed">
+                    <strong>Important:</strong> After submission, you'll receive a unique Anonymous ID. Save this ID to check the status of your report. We cannot recover lost IDs or link reports to individuals.
+                  </p>
+                </div>
+
+                </div>
 
               {/* Sidebar */}
-              <div className="space-y-6">
+            <div className="space-y-6">
                 {/* Anonymity Notice */}
-                <div className="bg-green-50 border border-green-200 rounded-2xl p-6 sticky top-24">
+                <div className="bg-green-50 border border-green-200 rounded-2xl p-6 top-24">
                   <div className="flex items-start gap-3 mb-4">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -326,13 +388,16 @@ export default function Whistleblowing() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full px-6 py-4 bg-[#DC2626] text-white rounded-xl font-bold text-base hover:bg-[#b91c1c] transition-colors flex items-center justify-center gap-3"
+                  disabled={isSubmitting}
+                  className="w-full px-6 py-4 bg-[#DC2626] text-white rounded-xl font-bold text-base hover:bg-[#b91c1c] transition-colors flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  Submit Anonymous Report
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
+                  {isSubmitting ? "Encrypting & Submitting..." : "Submit Anonymous Report"}
+                  {!isSubmitting && (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  )}
                 </button>
 
                 {/* Help Link */}
@@ -345,7 +410,7 @@ export default function Whistleblowing() {
               </div>
             </div>
           </form>
-        </main>
-      </div>
-    );
-  }
+      </main>
+    </div>
+  );
+}
