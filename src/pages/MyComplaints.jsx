@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import api from "../services/api";
 import { COMPLAINT_STATUS, COMPLAINT_STATUS_STYLES, COMPLAINT_STAT_CARDS, PRIORITY_LIST } from "../utils/constants";
-import Logo from "../components/Logo";
+import Navbar from "../components/Navbar";
 
 
 export default function MyComplaints() {

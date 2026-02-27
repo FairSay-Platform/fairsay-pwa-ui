@@ -4,10 +4,28 @@ import { useAppContext } from "../context/AppContext";
 import { isCourseUnlocked, getCourseProgress } from "../utils/logic-helpers";
 import Navbar from "../components/Navbar";
 
+//Additional learning modules
+const optionalModules = [
+  {
+    id: "whistleblower-protections",
+    title: "Whistleblower Protections",
+    duration: "18 min",
+    lessons: 3,
+    description: "Legal protections for reporting illegal activities",
+  },
+  {
+    id: "workplace-safety",
+    title: "Workplace Safety (OSHA)",
+    duration: "25 min",
+    lessons: 5,
+    description: "Your rights to a safe working environment",
+  },
+];
+
 export default function EducationHub() {
   const { user, logout } = useAppContext();
 
-  // Dynamically calculate progress based on our local storage tracker!
+  //Dynamically calculate progress
   const enrichedCourses = courses.map((course) => {
     const progress = getCourseProgress(course.id);
     return {
@@ -17,8 +35,11 @@ export default function EducationHub() {
     };
   });
 
+  //Calculate dynamic stats for the Hero section
   const completedCourses = enrichedCourses.filter((c) => c.actualProgress === 100).length;
-  const inProgressCourses = enrichedCourses.filter((c) => c.actualProgress > 0 && c.actualProgress < 100).length;
+  const totalRequired = enrichedCourses.length;
+  const overallProgress = Math.round((completedCourses / totalRequired) * 100) || 0;
+  const remaining = totalRequired - completedCourses;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -59,19 +80,20 @@ export default function EducationHub() {
             </div>
             </div>
             
-            {/* Stats */}
-            <div className="flex gap-3">
-              <div className="bg-white/20 backdrop-blur-sm px-5 py-3 rounded-xl text-center min-w-[90px]">
-                <div className="text-2xl font-bold">{stats.total}</div>
-                <div className="text-xs text-blue-100 font-medium">Courses</div>
+            {/* Stats Card */}
+            <div className="bg-white/10 border border-white/20 rounded-xl p-8 w-full lg:w-[480px] shrink-0 mt-4 lg:mt-0 mr-10">
+              <div className="items-center gap-3 mb-3">
+              <svg width="34px" height="64px" viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff" stroke-width="0.00024000000000000003"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 0C7.58172 0 4 3.58172 4 8C4 10.0289 4.75527 11.8814 6 13.2916V23C6 23.3565 6.18976 23.686 6.49807 23.8649C6.80639 24.0438 7.18664 24.0451 7.49614 23.8682L12 21.2946L16.5039 23.8682C16.8134 24.0451 17.1936 24.0438 17.5019 23.8649C17.8102 23.686 18 23.3565 18 23V13.2916C19.2447 11.8814 20 10.0289 20 8C20 3.58172 16.4183 0 12 0ZM6 8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8C18 11.3137 15.3137 14 12 14C8.68629 14 6 11.3137 6 8ZM16 14.9297C14.8233 15.6104 13.4571 16 12 16C10.5429 16 9.17669 15.6104 8 14.9297V21.2768L11.5039 19.2746C11.8113 19.0989 12.1887 19.0989 12.4961 19.2746L16 21.2768V14.9297Z" fill="#ffffff"></path> </g></svg>
+                <p className="text-white font-semibold font-poppins text-[15px]">Educational Status</p>
               </div>
-              <div className="bg-white/20 backdrop-blur-sm px-5 py-3 rounded-xl text-center min-w-[90px]">
-                <div className="text-2xl font-bold">{stats.completed}</div>
-                <div className="text-xs text-blue-100 font-medium">Completed</div>
-              </div>
-              <div className="bg-white/20 backdrop-blur-sm px-5 py-3 rounded-xl text-center min-w-[90px]">
-                <div className="text-2xl font-bold">{stats.unlocked}</div>
-                <div className="text-xs text-blue-100 font-medium">Unlocked</div>
+              <p className="text-blue-100 text-xs mb-3 leading-relaxed font-inter">
+                Complete all required modules to unlock complaint submission
+              </p>
+              <div className="h-2 bg-white/20 rounded-full overflow-hidden mb-2">
+                <div
+                  className="h-full bg-white rounded-full transition-all duration-700"
+                  style={{ width: `${overallProgress}%` }}
+                />
               </div>
               <p className="text-blue-200 text-xs font-inter">{remaining} modules remaining</p>
             </div>
@@ -252,38 +274,26 @@ function CourseCard({ course }) {
             style={{ backgroundColor: course.isUnlocked ? course.color : '#9CA3AF' }}
           >
             <CourseIcon icon={course.icon} />
-            {!isUnlocked && (
-              <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </div>
-            )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-xl font-bold text-gray-900">{course.title}</h3>
-              {isCompleted && (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              )}
-            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-1 font-poppins">{course.title}</h3>
+            <p className="text-sm text-gray-600 leading-relaxed font-inter">{course.description}</p>
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="mb-4">
           <div className="flex justify-between text-xs mb-1.5">
-            <span className="text-gray-500 font-medium">Progress</span>
-            <span className="font-bold" style={{ color: course.isUnlocked ? course.color : '#9CA3AF' }}>{progressPercent}%</span>
+            <span className="text-gray-500 font-medium font-inter">Progress</span>
+            <span className="font-bold font-inter" style={{ color: course.isUnlocked ? course.color : '#9CA3AF' }}>{progressPercent}%</span>
           </div>
           <div className="w-full bg-gray-100 rounded-full h-2">
             <div
-              className="h-full rounded-full bg-[#0F766E]"
-              style={{ width: `${module.progress}%` }}
+              className="h-2 rounded-full transition-all duration-500"
+              style={{ 
+                width: `${progressPercent}%`,
+                backgroundColor: course.isUnlocked ? course.color : '#9CA3AF'
+              }}
             />
           </div>
         </div>
@@ -386,16 +396,6 @@ function CourseIcon({ icon }) {
           <line x1="12" y1="3" x2="12" y2="21" />
           <path d="m8 9-4 6h8l-4-6z" />
           <path d="M16 15h8l-4-6z" />
-        </svg>
-      );
-    case "document":
-      return (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-          <line x1="16" y1="13" x2="8" y2="13" />
-          <line x1="16" y1="17" x2="8" y2="17" />
-          <polyline points="10 9 9 9 8 9" />
         </svg>
       );
     case "heart":

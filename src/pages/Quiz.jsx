@@ -99,7 +99,7 @@ export default function Quiz() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
+      
       <Navbar />
 
       <main className="max-w-[95%] mx-auto px-4 py-6">

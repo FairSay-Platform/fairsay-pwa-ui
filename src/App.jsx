@@ -164,46 +164,20 @@ function App() {
               <Whistleblowing />
             </ProtectedRoutes>
           } />
-        
-        {/* Onboarding Routes */}
-        <Route path="/complete-profile" element={<CompleteProfile />} />
-        <Route path="/employee-verification" element={<EmployeeVerification />} />
-        <Route path="/account-success" element={<AccountSuccess />} />
-        
-        {/* Dashboard / Home */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/home" element={<Dashboard />} />
-        
-        {/* Complaint Routes */}
-        <Route path="/file-complaint" element={<ComplaintForm />} />
-        <Route path="/complaint-success" element={<ComplaintSuccess />} />
-        <Route path="/my-complaints" element={<MyComplaints />} />
-        <Route path="/complaint-feedback" element={<ComplaintFeedback />} />
-        
-        {/* Education Hub Routes */}
-        <Route path="/learning" element={<EducationHub />} />
-        <Route path="/learning/lesson/:courseId/:lessonId" element={<Lesson />} />
-        <Route path="/learning/quiz/:courseId" element={<Quiz />} />
-        <Route path="/ai-assistant" element={<AIAssistant />} />
-        <Route path="/whistleblowing" element={<AnonymousReport />} />
-        <Route path="/anonymous-report" element={<AnonymousReport />} />
-        
-        {/* Profile Routes */}
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/profile/settings" element={<ProfileSettings />} />
-        <Route path="/profile/delete-account" element={<DeleteAccount />} />
-        
-        {/* Admin Portal Routes */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/complaints" element={<AdminComplaints />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/security" element={<AdminSecurity />} />
-        
-        {/* Catch all - redirect to sign in */}
-        <Route path="*" element={<Navigate to="/sign-in" replace />} />
-      </Routes>
-      <Alert />
-    </BrowserRouter>
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin/dashboard" element={<ProtectedRoutes requireAdmin={true}>
+            <AdminDashboard /></ProtectedRoutes>} />
+          <Route path="/admin/complaints" element={<ProtectedRoutes requireAdmin={true}><AdminComplaints /></ProtectedRoutes>} />
+          <Route path="/admin/users" element={<ProtectedRoutes requireAdmin={true}><AdminUsers /></ProtectedRoutes>} />
+          <Route path="/admin/security" element={<ProtectedRoutes requireAdmin={true}><AdminSecurity /></ProtectedRoutes>} />
+          
+          {/* Catch all - redirect to landing page */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <Alert />
+      </BrowserRouter>
     </AppProvider>
   );
 }
