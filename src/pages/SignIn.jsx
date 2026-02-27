@@ -16,16 +16,19 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setAlert({ show: false, message: "", type: "error"});
-    const result = await login(formData.email, formData.password);
-    if (result.success) {
-    
-    // Here you would handle authentication
-    navigate('/dashboard');
+ e.preventDefault();
+  setAlert({ show: false, message: "", type: "error" });
+  const result = await login(formData.email, formData.password);
+  if (result.success) {
+    if (result.user?.course_completed) {
+      // Here you would handle authentication
+      navigate("/dashboard");
     } else {
-      setAlert({ show: true, message: result.message, type: "error"});
+      navigate("/learning");
     }
+  } else {
+    setAlert({ show: true, message: result.message, type: "error" });
+  }
   };
 
   return (
