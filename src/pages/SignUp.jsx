@@ -23,31 +23,72 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setAlert({ show: false, message: "", type: "error" });
-    // Here you would handle account creation
-    if (formData.password !== formData.confirmPassword) {
-      showAlert("Passwords do not match", "error" );
-      return;
-    }
-    try {
-      const payload = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password
-      }
+  e.preventDefault();
+  setAlert({ show: false, message: "", type: "error" });
+
+  if (formData.password !== formData.confirmPassword) {
+    setAlert({ show: true, message: "Passwords do not match", type: "error" });
+    return;
+  }
+
+  try {
+    const payload = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      email: formData.email,
+      password: formData.password
+    };
+    // const payload = {
+    //   first_name: formData.firstName,
+    //   last_name: formData.lastName,
+    //   email: formData.email,
+    //   password: formData.password
+    // };
+
     const res = await api.post('/auth/register', payload);
-    setAlert({ show: true, message: res.data.message, type: "success"});
+
+    setAlert({ show: true, message: res.data.message, type: "success" });
 
     setTimeout(() => {
-      navigate("/check-email")
+      navigate("/check-email");
     }, 3000);
+
   } catch (err) {
-    const errorMsg = err.response?.data?.message || "Registration failed. Please try again";
-    setAlert({ show: true, message: errorMsg, type: "error"});
+    const errorMsg =
+      err.response?.data?.message ||
+      "Registration failed. Please try again";
+
+    setAlert({ show: true, message: errorMsg, type: "error" });
   }
 };
+
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setAlert({ show: false, message: "", type: "error" });
+//     // Here you would handle account creation
+//     if (formData.password !== formData.confirmPassword) {
+//       showAlert("Passwords do not match", "error" );
+//       return;
+//     }
+//     try {
+//       const payload = {
+//         firstName: formData.firstName,
+//         lastName: formData.lastName,
+//         email: formData.email,
+//         password: formData.password
+//       }
+//     const res = await api.post('/auth/register', payload);
+//     setAlert({ show: true, message: res.data.message, type: "success"});
+
+//     setTimeout(() => {
+//       navigate("/check-email")
+//     }, 3000);
+//   } catch (err) {
+//     const errorMsg = err.response?.data?.message || "Registration failed. Please try again";
+//     setAlert({ show: true, message: errorMsg, type: "error"});
+//   }
+// };
 
 
   //Added - a developer bypass for testing purposes
