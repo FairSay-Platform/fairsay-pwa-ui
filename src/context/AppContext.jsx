@@ -96,7 +96,7 @@ const login = async (email, password) => {
 
     localStorage.setItem('fs_token', token);
     setUser(normalizedUser);
-    return { success: true };
+    return { success: true, user: normalizedUser }; 
   } catch (err) {
     return { success: false, message: err.response?.data?.message || "Login failed"};
   }

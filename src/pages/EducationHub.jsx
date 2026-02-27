@@ -4,7 +4,9 @@ import { courses } from "../data/courses";
 
 export default function EducationHub() {
   const completedCourses = courses.filter((c) => c.progress === 100).length;
-  const inProgressCourses = courses.filter((c) => c.progress > 0 && c.progress < 100).length;
+   const inProgressCourses = courses.filter(
+     (c) => c.progress > 0 && c.progress < 100
+   ).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
