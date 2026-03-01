@@ -1,12 +1,11 @@
 import Logo from '../components/Logo';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { APP_NAME } from '../utils/constants';
 import { useAppContext } from '../context/AppContext';
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const { login } = useAppContext();
+  const { login, devLogin } = useAppContext();
   const [alert, setAlert] = useState({ show: false, message: "", type: "error"});
   const [formData, setFormData] = useState({
     email: '',
@@ -31,6 +30,21 @@ export default function SignIn() {
   }
   };
 
+  // Quick login for development (bypasses actual auth, sets a dummy token and user role depending on persona)
+  const handleQuickLogin = (persona) => {
+    const res = devLogin(persona);
+    if (res.success) {
+      // Dynamic routing based on persona
+      if (persona === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (persona === 'whistleblower') {
+        navigate('/whistleblowing');
+      } else {
+        navigate('/dashboard'); // newbie or standard user
+      }
+    } 
+  }
+
   return (
     <div
       className="min-h-screen flex justify-center items-center px-4 py-7"
@@ -40,10 +54,9 @@ export default function SignIn() {
     >
       <div className="w-full max-w-[504px] flex flex-col items-center gap-7">
         {/* Logo */}
-       {/* Logo Header - Fixed! */}
-<div className="mb-2 transform scale-125 origin-center">
-  <Logo />
-</div>
+        <div className="mb-2 transform scale-125 origin-center">
+          <Logo />
+        </div>
 
         {/* Main Card */}
         <div className="w-full rounded-2xl bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] p-7">
@@ -56,15 +69,14 @@ export default function SignIn() {
             </p>
           </div>
 
-
-       {/*For rendering the alert*/}
-       {alert.show && (
-         <div className={`mb-6 p-4 rounded-lg text-sm font-medium border ${
-           alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-         }`}>
-           {alert.message}
-         </div>
-       )}
+          {/*For rendering the alert*/}
+          {alert.show && (
+            <div className={`mb-6 p-4 rounded-lg text-sm font-medium border ${
+              alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+            }`}>
+              {alert.message}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-[18px]">
             {/* Email Address */}
@@ -268,6 +280,36 @@ export default function SignIn() {
               </Link>
             </div>
           </form>
+
+          {/* 🛠️ QUICK LOGIN SECTION (DEV ONLY) */}
+          {import.meta.env.DEV && (
+            <div className="mt-8 pt-6 border-t border-dashed border-gray-200">
+              <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-3 text-center">🛠️ Developer Quick Login</p>
+              <div className="grid grid-cols-3 gap-2">
+                <button 
+                  type="button"
+                  onClick={() => handleQuickLogin('admin')}
+                  className="px-2 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg text-[11px] font-bold text-purple-700 transition-colors"
+                >
+                  Admin
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleQuickLogin('whistleblower')}
+                  className="px-2 py-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg text-[11px] font-bold text-red-700 transition-colors"
+                >
+                  Whistleblower
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleQuickLogin('newbie')}
+                  className="px-2 py-2 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg text-[11px] font-bold text-green-700 transition-colors"
+                >
+                  New User
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Back to Home */}
@@ -300,7 +342,6 @@ export default function SignIn() {
           Back to Home
         </Link>
       </div>
-      
     </div>
   );
 }

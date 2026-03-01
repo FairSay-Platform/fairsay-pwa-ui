@@ -1,6 +1,5 @@
 import Logo from "../components/Logo";
 import { Link } from "react-router-dom";
-import { APP_NAME } from "../utils/constants";
 
 export default function AccountSuccess() {
   return (
@@ -11,7 +10,6 @@ export default function AccountSuccess() {
         {/* Logo */}
         <div className="flex items-center gap-2 w-full justify-center">
                    <div className="w-10 h-10"><Logo /></div>
-                   <span className="text-[36px] font-bold font-poppins text-[#1e3a8a]">{APP_NAME}</span>
                  </div>
 
         {/* Main Card */}

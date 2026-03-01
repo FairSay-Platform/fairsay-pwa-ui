@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import {  REQUIRED_MODULES } from "../utils/constants";
+import { courses } from "../data/courses";
 import { useAppContext } from "../context/AppContext";
 import api from '../services/api';
 import book from '../images/Book.svg';
@@ -10,17 +10,17 @@ import report from '../images/Report.svg';
 import whitecheckmark from '../images/Whitecheckmark.svg';
 import chatbubble from '../images/Chatbubble.svg';
 import ribbon from '../images/Ribbon.svg';
-import { getActivityIcon, calculateProgress, isModuleCompleted } from "../utils/logic-helpers";
-
-
+import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/logic-helpers";
 
  export default function Dashboard() {
   const { user, logout } = useAppContext();
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [complaintStats, setComplaintStats] = useState({ active: 0, resolved: 0});
- 
+  const [aiCount, setAiCount] = useState(0);
 
+  const progressStats = getProgressStats();
+  
   //To sync activities with localStorage
   useEffect(() => {
     if (user?.id) {
@@ -29,11 +29,19 @@ import { getActivityIcon, calculateProgress, isModuleCompleted } from "../utils/
         const allLogs = storedLogs ? JSON.parse(storedLogs) : [];
         
         if (Array.isArray(allLogs)) {
-          const userLogs = allLogs
-            .filter(log => log && log.userId === user.id)
-            .reverse() 
-            .slice(0, 5);
-          setActivities(userLogs);
+          // Filter logs for this specific user
+          const userLogs = allLogs.filter(log => log && log.userId === user.id);
+          
+          //To set recent activities (max 5)
+          setActivities([...userLogs].reverse().slice(0, 5));
+
+          //To calculate total AI consultation sessions dynamically!
+          const aiSessions = userLogs.filter(log => 
+            log.action?.includes("AI") || 
+            log.action?.includes("Chat") || 
+            log.action?.includes("Consultation")
+          );
+          setAiCount(aiSessions.length);
         }
       } catch (error) {
         console.error("Failed to parse logs:", error);
@@ -63,19 +71,6 @@ import { getActivityIcon, calculateProgress, isModuleCompleted } from "../utils/
       fetchComplaints();
     }
   }, [user]);
-
-  
-
-  //To handle user logout, clearing session and redirecting to sign-in page.
-  const handleLogout = () => {
-    logout();
-    navigate('/sign-in');
-  };
-
-
-  const progressPercent = calculateProgress(user, REQUIRED_MODULES.length) || 0;
-  const completedCount = user.completedModules?.length || 0;
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
@@ -131,10 +126,40 @@ import { getActivityIcon, calculateProgress, isModuleCompleted } from "../utils/
 
         {/* Top Stat Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 px-2">
-          <TopStat icon={book} label="Education Progress" value={`${progressPercent}%`} detail={`${completedCount} of ${REQUIRED_MODULES.length} modules`} trend="+20%" corner="bg-[#0F766E]/20" iconBg="bg-[#0F766E]" />
-          <TopStat icon={report} label="Active Complaints" value={complaintStats.active.toString()} detail="1 under review" badge="Update" corner="bg-[#1E3A8A]/20" iconBg="bg-[#1E3A8A]" />
-          <TopStat icon={whitecheckmark} label="Resolved Cases" value={complaintStats.resolved.toString()} detail="This month" corner="bg-[#0F766E]/20" iconBg="bg-[#0F766E]" />
-          <TopStat icon={chatbubble} label="AI Consultations" value="8" detail="Total sessions" corner="bg-[#B91C1C]/20" iconBg="bg-[#1E3A8A]" />
+          <TopStat 
+            icon={book} 
+            label="Education Progress" 
+            value={`${progressStats.completionPercentage}%`} 
+            detail={`${progressStats.completed} of ${progressStats.total} modules`} 
+            trend={progressStats.completionPercentage === 100 ? "Completed" : progressStats.completionPercentage > 0 ? "In Progress" : "Not Started"} 
+            corner="bg-[#0F766E]/20" 
+            iconBg="bg-[#0F766E]" 
+          />
+          <TopStat 
+            icon={report} 
+            label="Active Complaints" 
+            value={complaintStats.active.toString()} 
+            detail={complaintStats.active === 0 ? "0 ongoing cases" : complaintStats.active === 1 ? "1 ongoing case" : `${complaintStats.active} ongoing cases`} 
+            badge={complaintStats.active > 0 ? "Action Needed" : null} 
+            corner="bg-[#1E3A8A]/20" 
+            iconBg="bg-[#1E3A8A]" 
+          />
+          <TopStat 
+            icon={whitecheckmark} 
+            label="Resolved Cases" 
+            value={complaintStats.resolved.toString()} 
+            detail={complaintStats.resolved === 0 ? "No cases yet" : "Successfully closed"} 
+            corner="bg-[#0F766E]/20" 
+            iconBg="bg-[#0F766E]" 
+          />
+          <TopStat 
+            icon={chatbubble} 
+            label="AI Consultations" 
+            value={aiCount.toString()} 
+            detail={aiCount === 1 ? "Total session" : "Total sessions"} 
+            corner="bg-[#B91C1C]/20" 
+            iconBg="bg-[#1E3A8A]" 
+          />
         </div>
 
             {/* Quick Actions */}
@@ -144,7 +169,7 @@ import { getActivityIcon, calculateProgress, isModuleCompleted } from "../utils/
                 <ActionCard 
                 icon={book}
                 title="Continue Learning" desc="Resume your rights education modules" btnText="Go to Education hub" color="bg-[#0D7A6F]" onClick={() => navigate('/learning')} />
-                <ActionCard icon={report} title="File New Complaint" desc="Report a workplace rights violation" btnText="Start Complaint" color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" locked={!user.educated} onClick={() => navigate('/file-complaint')} />
+                <ActionCard icon={report} title="File New Complaint" desc="Report a workplace rights violation" btnText="Start Complaint" color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" locked={!progressStats.completionPercentage} onClick={() => navigate('/file-complaint')} />
                 <ActionCard icon={chatbubble} title="Ask AI Assistant" desc="Get instant guidance on your rights" btnText="Start Chat" color="bg-[#2D4495]"  onClick={() => navigate('/ai-assistant')} />
               </div>
             </section>
@@ -157,16 +182,20 @@ import { getActivityIcon, calculateProgress, isModuleCompleted } from "../utils/
                 <h3 className="text-[20px] font-bold font-poppins  text-gray-800">Recent Activity</h3>
                 <button className="text-[14px] font-inter font-semibold text-[#1E3A8A] hover:underline">View All</button>
               </div>
-              <div className="space-y-3">
-                {activities.map((log, i) => (
+             <div className="space-y-3">
+              {activities.length > 0 ? (
+                activities.map((log, i) => (
                   <ActivityItem key={i} log={log} />
-                ))}
-              </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-4">No recent activity found.</p>
+              )}
+            </div>
             </section>
 
           {/* Sidebar */}
           <div className="lg:col-span-4 space-y-6">
-            <EducationSidebar modules={REQUIRED_MODULES} user={user} />
+            <EducationSidebar user={user} />
             <div className="bg-white rounded-xl border border-gray-300 p-8 shadow-lg">
                <h4 className="font-bold text-gray-800 font-poppins text-[16px] mb-4">Quick Links</h4>
                <div className="space-y-4">
@@ -195,6 +224,9 @@ import { getActivityIcon, calculateProgress, isModuleCompleted } from "../utils/
 
 // Sub-components
 function TopStat({ icon, label, value, detail, trend, badge, corner, iconBg }) {
+  // Little touch to make the trend text color match the wording!
+  const trendColor = trend === "Completed" ? "text-green-600" : trend === "In Progress" ? "text-teal-600" : "text-gray-400";
+
   return (
     <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
       <div className={`absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-40 ${corner}`} />
@@ -204,7 +236,7 @@ function TopStat({ icon, label, value, detail, trend, badge, corner, iconBg }) {
       <p className="text-[16px] text-gray-400 font-inter font-bold tracking-wider">{label}</p>
       <div className="flex items-baseline gap-2">
         <span className="text-[30px] font-inter font-black text-gray-800">{value || '0'}</span>
-        {trend && <span className="text-[10px] font-bold text-teal-600">↗ {trend || '0'}</span>}
+        {trend && <span className={`text-[10px] font-bold ${trendColor}`}>{trend}</span>}
         {badge && <span className="text-[9px] bg-red-500 text-white px-2 py-0.5 rounded-full font-bold uppercase">{badge}</span>}
       </div>
       <p className="text-[12px] font-inter text-gray-400 mt-1">{detail}</p>
@@ -246,15 +278,15 @@ function ActivityItem({ log }) {
       <div className="flex-1">
         <h5 className="text-[16px] font-bold text-gray-800 font-inter">{log.action}</h5>
         <p className="text-[12px] text-gray-500 leading-relaxed font-inter">{log.details}</p>
-         <span className="text-[12px] text-gray-400 font-medium font-inter whitespace-nowrap">{log.timestamp}</span>
+         <span className="text-[12px] text-gray-400 font-medium font-inter whitespace-nowrap">{log.timestamp.includes('now') ? log.timestamp : new Date(log.timestamp).toLocaleString()}</span>
       </div>
     </div>
   );
 }
 
-function EducationSidebar({ modules, user ={} }) {
+function EducationSidebar() {
   const navigate = useNavigate();
-  if (!user) return null;
+ 
   return (
     <div className="bg-white rounded-xl border border-gray-300 p-6 shadow-lg">
       <div className="flex justify-between items-center mb-6">
@@ -265,9 +297,10 @@ function EducationSidebar({ modules, user ={} }) {
       </div>
       
       <div className="space-y-5 mb-8">
-        {modules.map((m) => {
+        {courses.map((m) => {
           
-          const progress = isModuleCompleted(user, m.id);
+          const progress = getCourseProgress(m.id);
+          const isDone = progress === 100;
           
           return (
             <div key={m.id}>
@@ -276,8 +309,10 @@ function EducationSidebar({ modules, user ={} }) {
                 <span className="text-gray-400 font-inter  text-[12px]">{progress}%</span>
               </div>
               <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-[#0F766E] to-[#00BBA7] h-full rounded-full transition-all duration-700 ease-out" 
+             <div 
+                  className={`h-full rounded-full transition-all duration-700 ease-out ${
+                    isDone ? 'bg-gradient-to-r from-[#0F766E] to-[#00BBA7]' : 'bg-[#1e3a8a]'
+                  }`}
                   style={{ width: `${progress}%` }} 
                 />
               </div>

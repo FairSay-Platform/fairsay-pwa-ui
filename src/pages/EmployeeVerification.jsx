@@ -3,9 +3,13 @@ import StepIndicator from "../components/StepIndicator";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { APP_NAME } from "../utils/constants";
+import { useAppContext } from "../context/AppContext";
 
 export default function EmployeeVerification() {
   const navigate = useNavigate();
+  const { updateUser } = useAppContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     declaration: "",
     file: null,
@@ -25,9 +29,21 @@ export default function EmployeeVerification() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/account-success");
+    setIsSubmitting(true);
+
+   
+    const success = await updateUser({
+      declaration: formData.declaration,
+      verification_status: 'pending' // This triggers the Dashboard banner!
+    });
+
+    setIsSubmitting(false);
+
+    if (success) {
+      navigate("/account-success");
+    }
   };
 
   return (
@@ -71,7 +87,7 @@ export default function EmployeeVerification() {
                   onChange={(e) =>
                     setFormData({ ...formData, declaration: e.target.value })
                   }
-                  placeholder="I declare that I am currently employed by [Company Name] in the position of [Job Title]. I u"
+                  placeholder="I declare that I am currently employed by [Company Name] in the position of [Job Title]. I understand that providing false information may result in account termination."
                   rows={6}
                   className="w-full px-4 py-[11px] border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent text-[#333] placeholder:text-[#9CA3AF] resize-none"
                   required
@@ -239,34 +255,37 @@ export default function EmployeeVerification() {
               </Link>
               <button
                 type="submit"
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[10px] font-semibold text-base text-white"
+                disabled={isSubmitting}
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[10px] font-semibold text-base text-white disabled:opacity-70 disabled:cursor-not-allowed transition-opacity"
                 style={{
                   background: "linear-gradient(180deg, #1E3A8A 0%, #0F766E 100%)",
                 }}
               >
-                Complete Verification
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4.16699 10H15.8337"
-                    stroke="white"
-                    strokeWidth="1.66667"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M10 4.16602L15.8333 9.99935L10 15.8327"
-                    stroke="white"
-                    strokeWidth="1.66667"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                {isSubmitting ? "Submitting..." : "Complete Verification"}
+                {!isSubmitting && (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4.16699 10H15.8337"
+                      stroke="white"
+                      strokeWidth="1.66667"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M10 4.16602L15.8333 9.99935L10 15.8327"
+                      stroke="white"
+                      strokeWidth="1.66667"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
               </button>
             </div>
           </form>

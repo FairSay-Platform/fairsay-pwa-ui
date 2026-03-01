@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import api from "../services/api";
 import { COMPLAINT_STATUS, COMPLAINT_STATUS_STYLES, COMPLAINT_STAT_CARDS, PRIORITY_LIST } from "../utils/constants";
-import Logo from "../components/Logo";
+import Navbar from "../components/Navbar";
 
 
 export default function MyComplaints() {
@@ -95,15 +95,7 @@ export default function MyComplaints() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
-      {/* Header */}
-      <header className="bg-white border-b border-[#E5E7EB] px-6 py-4">
-        <div className="max-w-[98%] mx-auto flex items-center justify-between">
-          <Logo />
-          <Link to="/dashboard" className="flex items-center gap-1 text-[#1E3A8A] hover:opacity-80 transition-opacity text-sm">
-            ← Back to Dashboard
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="max-w-[98%] mx-auto px-6 py-7">
         {/* Page header */}

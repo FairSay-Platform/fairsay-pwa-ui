@@ -15,28 +15,6 @@ import analytics from '../images/Analytics.svg';
 //Added - the web app name
 export const APP_NAME = "FairSay";
 
-//Added - the required educational modules for the employee education hub, simulating the core content that users need to complete to unlock certain features or progress through the app. This allows for a structured learning path and ensures that users are informed about their rights and responsibilities in the workplace.
-
-export const REQUIRED_MODULES = [
-  { id: 'placeholder1', title: 'Understanding placeholder1', lessonCount: 1 },
-  { id: 'plceholder2', title: 'Understanding placeholder2', lessonCount: 2 },
-  { id: 'placeholder3', title: 'Understanding placeholder3', lessonCount: 3 },
-  { id: 'placeholder4', title: 'Understanding placeholder4', lessonCount: 4 },
-  { id: 'placeholder5', title: 'Understanding placeholder5', lessonCount: 5 }
-];
-
-//Added - the final educational module quiz questions, simulating an assessment that users must complete to demonstrate their understanding of the educational content. This helps ensure that users have absorbed the necessary information before progressing to the next stage of the app. 
-//On second thought, I'll make this a quiz master key
-
-
-
-export const FINAL_QUIZ_KEY = {
-  placeholder1: { question: 'What is placeholder1?', answer: 'Answer1' },
-  placeholder2: { question: 'What is placeholder2?', answer: 'Answer2' },
-  placeholder3: { question: 'What is placeholder3?', answer: 'Answer3' },
-  placeholder4: { question: 'What is placeholder4?', answer: 'Answer4' },
-  placeholder5: { question: 'What is placeholder5?', answer: 'Answer5' }
-}
 
 //Added - complaint status options, simulating the different stages a complaint can go through in the system. This allows for better tracking and management of complaints within the app.
 export const COMPLAINT_STATUS = {
@@ -66,7 +44,8 @@ export const SEARCH_CATEGORIES = [
 
 //Added - Priority list
 export const PRIORITY_LIST = [
-  { id: 'medium,', label: 'Medium Priority' },
+  { id: 'low', label: 'Low Priority' },
+  { id: 'medium', label: 'Medium Priority' },
   { id: 'high', label: 'High Priority' },
   {id: 'critical', label: 'Critical Priority' }
 ]
@@ -186,7 +165,7 @@ export const APP_STEPS = {
 //Added - file upload validation rules, simulating the logic that ensures users can only upload files that meet certain criteria (such as file type and size limits). This helps prevent issues with file handling and ensures a smoother user experience when attaching evidence to complaints.
 
 export const FILE_UPLOAD_RULES = {
-  allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'imahe/jpg'],
+  allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'],
   maxSize: 10 * 1024 * 1024 // 10MB
 };
 

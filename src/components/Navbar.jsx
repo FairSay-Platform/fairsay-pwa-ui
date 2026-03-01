@@ -79,7 +79,7 @@ export default function Navbar() {
     }`}>
       <div className="max-w-[95%] mx-auto flex items-center justify-between">
         <Link to="/dashboard" className="hover:opacity-80 transition-opacity">
-          <Logo scrolled={scrolled} />
+          <Logo variant="nav" scrolled={scrolled} />
         </Link>
         <div className="flex items-center gap-4">
           
@@ -90,7 +90,7 @@ export default function Navbar() {
               className={`relative p-2 rounded-lg transition-colors duration-700 ${
                 scrolled 
                   ? 'hover:bg-white/20' 
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                  : 'hover:bg-gray-500 dark:hover:bg-blue-200'
               }`}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -157,25 +157,25 @@ export default function Navbar() {
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className={`flex items-center gap-3 hover:opacity-80 transition-all duration-700 p-2 rounded-lg ${
-                scrolled ? 'hover:bg-white/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                scrolled ? 'hover:bg-white/20' : 'hover:bg-gray-50 dark:hover:bg-blue-100'
               }`}
             >
               {/* Dynamic Initials */}
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors duration-700 ${
-                scrolled ? 'bg-white text-[#1E3A8A]' : 'bg-[#1E3A8A] text-white'
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-700 ${
+                scrolled ? 'bg-white text-[#1E3A8A] font-poppins' : 'bg-[#1E3A8A] text-white font-poppins'
               }`}>
                 {user ? getInitials(user) : "U"}
               </div>
               
               {/* Dynamic User Info */}
               <div className="hidden md:block text-left">
-                <div className={`font-semibold text-sm ${
-                  scrolled ? 'text-white' : 'text-[#333] dark:text-dark-text-primary'
+                <div className={`text-2x1 ${
+                  scrolled ? 'text-white font-poppins' : 'text-[#333] dark:text-dark-text-primary font-poppins font-semibold'
                 }`}>
                   {user?.firstName} {user?.lastName}
                 </div>
                 <div className={`text-xs ${
-                  scrolled ? 'text-white/80' : 'text-[#9CA3AF] dark:text-dark-text-tertiary'
+                  scrolled ? 'text-white/80 font-inter' : 'text-[#959aa3] dark:text-dark-text-tertiary font-inter'
                 }`}>
                   {user?.job_title || 'Employee'}
                 </div>
@@ -187,20 +187,43 @@ export default function Navbar() {
 
             {/* Dropdown Menu */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-dark-bg-secondary rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-dark-bg-secondary rounded-xl shadow-lg border border-gray-200 dark:border-gray-300 py-2 z-50">
                 {/* User Info Header */}
-                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-                  <div className="font-semibold text-sm text-gray-900 dark:text-dark-text-primary">
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-200">
+                  <div className="font-semibold text-sm text-gray-700 dark:text-dark-text-primary font-poppins mb-2">
                     {user?.firstName} {user?.lastName}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-dark-text-tertiary mt-0.5 truncate">
+                  <div className="text-xs text-gray-500 dark:text-dark-text-tertiary mt-0.5 truncate font-inter">
                     {user?.email}
                   </div>
                 </div>
 
                 {/* Menu Items */}
+
+                 <Link
+                    to="/profile"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    My Profile
+                  </Link>
+
+                  <Link
+                    to="/profile/settings"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    Settings
+                  </Link>
+                  
                 <div className="py-2">
-                  <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 font-inter dark:hover:bg-gray-50 transition-colors">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="7" height="9"/>
                       <rect x="14" y="3" width="7" height="5"/>
@@ -210,7 +233,7 @@ export default function Navbar() {
                     Dashboard
                   </Link>
 
-                  <Link to="/my-complaints" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <Link to="/my-complaints" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-gray-50 font-inter transition-colors">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                       <polyline points="14 2 14 8 20 8"/>
@@ -218,7 +241,7 @@ export default function Navbar() {
                     My Complaints
                   </Link>
 
-                  <Link to="/learning" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <Link to="/learning" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-gray-50 font-inter transition-colors">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
                       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
@@ -226,7 +249,7 @@ export default function Navbar() {
                     Learning Hub
                   </Link>
                   
-                  <Link to="/ai-assistant" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <Link to="/ai-assistant" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-dark-text-secondary hover:bg-gray-50 dark:hover:bg-gray-50 font-inter transition-colors">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                     </svg>
@@ -235,12 +258,12 @@ export default function Navbar() {
                 </div>
 
                 {/* Divider */}
-                <div className="border-t border-gray-100 dark:border-gray-700 my-2"></div>
+                <div className="border-t border-gray-100 dark:border-gray-200 my-2"></div>
 
                 {/* Logout Button */}
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-400/20 font-inter transition-colors text-left"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>

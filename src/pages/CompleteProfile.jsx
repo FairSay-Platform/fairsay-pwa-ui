@@ -36,7 +36,6 @@ export default function CompleteProfile() {
         {/* Logo */}
         <div className="flex items-center justify-center w-full gap-2">
                    <div className="w-10 h-10"><Logo /></div>
-                   <span className="text-[36px] font-bold font-poppins text-[#1e3a8a]">{APP_NAME}</span>
                  </div>
 
         {/* Step Indicator */}

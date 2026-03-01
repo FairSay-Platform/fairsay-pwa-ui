@@ -25,13 +25,12 @@ const Header = () => {
   return (
     <header className="fixed top-0 w-full z-50 bg-[#1e3a8a] backdrop-blur-sm border-b border-white/10">
       <div className="mx-auto px-8 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-2 cursor-pointer w-52" onClick={() => navigate('/')}>
-          <div className="w-8 h-8  rounded-lg flex items-center justify-center"><Logo /></div>
-          <span className="text-2xl font-bold font-poppins w-[93px] h-[32px] leading-[32px] gap-2 text-white">{APP_NAME}</span>
+        <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
+          <div className="rounded-lg flex items-center justify-center"><Logo variant="light" /></div>
         </div>
 
         {/*Desktop Navigation*/}
-        <nav className="hidden md:flex items-center gap-10 text-[14px] font-light font-inter">
+        <nav className="hidden md:flex items-center gap-10 text-[14px] font-light font-inter px-3">
           {navLinks.map((item) => (
             <a key={item} href={`#${item.toLowerCase().replace(/\s/g, '-')}`} className="text-gray-300 hover:text-[#2DD4BF] transition-colors">{item}</a>
           ))}
@@ -109,9 +108,9 @@ const Hero = () => {
     <section className="relative min-h-[90vh] flex items-center bg-slate-900 pt-20 pb-5">
         <div style={{ backgroundImage: `url(${Heroimage})` }} className="w-full h-full bg-cover bg-center bg-no-repeat absolute inset-0 z-0 blur-[5px]" />
         
-      <div className="container ml-[32px] relative z-10 grid lg:grid-cols-2 gap-12 w-[1516px] px-6">
+      <div className="container mx-auto relative z-10 grid lg:grid-cols-2 gap-12 w-full px-2">
         <div className="text-white">
-          <h1 className="text-[60px] md:text-7xl font-bold leading-tight mb-5 font-poppins">
+          <h1 className="text-[60px] md:text-7x1 md:mb-10 font-bold leading-tight mb-5 font-poppins">
             Your Voice <br /> <span className="text-white">Matters.</span> <br />
             <span className="text-[#2DD4BF] text-[48px]">Speak Up</span> with Confidence.
           </h1>
@@ -123,7 +122,7 @@ const Hero = () => {
             <button className="border border-white/30 px-4 py-4 rounded-md font-bold flex justify-center">Learn more <img className="ml-8 h-6 gap-2" src={arrow} alt="Arrow right" /></button>
           </div>
         </div>
-        <div className="hidden lg:flex flex-col justify-center max-w-[1516px]">
+        <div className="hidden lg:flex flex-col justify-center max-w-full">
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 space-y-6 min-h-[270px]">
                 <div className="flex items-center gap-4"><span className="h-[48px] w-[48px] px-[8px] pt-[14px] bg-[#0f766e] rounded-[10px]"><img className="ml-2 h-[20px] w-[20px] gap-2 text-white" src={shield} alt="Shield icon" /></span> <div><p className="text-white font-bold text-[18px] font-poppins">Protected & Confidential</p>
                 <p className="text-sm text-gray-400">Your privacy is our priority</p></div>
@@ -282,8 +281,7 @@ const Footer = () => {
         {/* Brand Info */}
         <div className="space-y-6">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8"><Logo /></div>
-            <span className="text-2xl font-bold font-poppins">{APP_NAME}</span>
+            <div className="w-8 h-8"><Logo variant="light" /></div>
           </div>
           <p className="text-gray-300 text-sm leading-relaxed max-w-[240px]">
             Empowering employees to speak up with confidence.

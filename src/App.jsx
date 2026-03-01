@@ -20,6 +20,14 @@ import Lesson from './pages/Lesson';
 import Quiz from './pages/Quiz';
 import AIAssistant from './pages/AIAssistant';
 import Whistleblowing from './pages/Whistleblowing';
+import Profile from './pages/Profile';
+import ProfileSettings from './pages/ProfileSettings';
+import DeleteAccount from './pages/DeleteAccount';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminComplaints from './pages/admin/AdminComplaints';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminSecurity from './pages/admin/AdminSecurity';
+import ComplaintFeedback from './pages/ComplaintFeedback';
 
 function App() {
   return (
@@ -27,7 +35,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-
+          
           {/* Authentication Routes */}
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
@@ -71,6 +79,23 @@ function App() {
             }
           />
 
+          {/* User Profile Management */}
+          <Route path="/profile" element={
+            <ProtectedRoutes>
+              <Profile />
+            </ProtectedRoutes>
+          } />
+          <Route path="/profile/settings" element={
+            <ProtectedRoutes>
+              <ProfileSettings />
+            </ProtectedRoutes>
+          } />
+          <Route path="/profile/delete" element={
+            <ProtectedRoutes>
+              <DeleteAccount />
+            </ProtectedRoutes>
+          } />
+
           {/* Complaint Management - Requires Profile Verification */}
           <Route
             path="/my-complaints"
@@ -82,68 +107,49 @@ function App() {
           />
 
           {/* Filing & Education - Requires Education Completion */}
-          <Route
-            path="/file-complaint"
-            element={
-              <ProtectedRoutes step={APP_STEPS.EDUCATION}>
-                <ComplaintForm />
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/complaint-success"
-            element={
-              <ProtectedRoutes step={APP_STEPS.EDUCATION}>
-                <ComplaintSuccess />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/file-complaint" element={
+            <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+              <ComplaintForm />
+            </ProtectedRoutes>
+          } />
+          <Route path="/complaint-success" element={
+            <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+              <ComplaintSuccess />
+            </ProtectedRoutes>
+          } />
+          <Route path="/complaint-feedback" element={
+            <ProtectedRoutes>
+              <ComplaintFeedback />
+            </ProtectedRoutes>
+          } />
 
           {/* Learning Hub */}
-          <Route
-            path="/learning"
-            element={
-              <ProtectedRoutes>
-                <EducationHub />
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/learning/lesson/:courseId/:lessonId"
-            element={
-              <ProtectedRoutes>
-                <Lesson />
-              </ProtectedRoutes>
-            }
-          />
-          <Route
-            path="/learning/quiz/:courseId"
-            element={
-              <ProtectedRoutes>
-                <Quiz />
-              </ProtectedRoutes>
-            }
-          />
-
+          <Route path="/learning" element={<ProtectedRoutes><EducationHub /></ProtectedRoutes>} />
+          <Route path="/learning/lesson/:courseId/:lessonId" element={<ProtectedRoutes><Lesson /></ProtectedRoutes>} />
+          <Route path="/learning/quiz/:courseId" element={<ProtectedRoutes><Quiz /></ProtectedRoutes>} />
+          
           {/* AI RAG */}
-          <Route
-            path="/ai-assistant"
-            element={
-              <ProtectedRoutes>
-                <AIAssistant />
-              </ProtectedRoutes>
-            }
-          />
-          {/*Whistleblowing Route*/}
-          <Route
-            path="/whistleblowing"
-            element={
-              <ProtectedRoutes>
-                <Whistleblowing />
-              </ProtectedRoutes>
-            }
-          />
+          <Route path="/ai-assistant" element={
+            <ProtectedRoutes>
+              <AIAssistant />
+            </ProtectedRoutes>
+          } />
+          
+          {/* Whistleblowing Route */}
+          <Route path="/whistleblowing" element={
+            <ProtectedRoutes>
+              <Whistleblowing />
+            </ProtectedRoutes>
+          } />
 
+          {/* Admin Routes */}
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin/dashboard" element={<ProtectedRoutes requireAdmin={true}>
+            <AdminDashboard /></ProtectedRoutes>} />
+          <Route path="/admin/complaints" element={<ProtectedRoutes requireAdmin={true}><AdminComplaints /></ProtectedRoutes>} />
+          <Route path="/admin/users" element={<ProtectedRoutes requireAdmin={true}><AdminUsers /></ProtectedRoutes>} />
+          <Route path="/admin/security" element={<ProtectedRoutes requireAdmin={true}><AdminSecurity /></ProtectedRoutes>} />
+          
           {/* Catch all - redirect to landing page */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -1,15 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { getInitials } from "../utils/logic-helpers";
+import { Link } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { askFairSayAI } from "../services/fs-services";
-import Logo from "../components/Logo";
+import Navbar from "../components/Navbar";
 
 export default function AIAssistant() {
-  const {user, logout} = useAppContext();
-  const navigate= useNavigate();
+  const {user} = useAppContext();
   const messagesEndRef = useRef();
-  const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -20,11 +17,7 @@ export default function AIAssistant() {
     }
   ]);
 
-  const unreadCount = notifications.filter(n => n.unread).length;
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, unread: false })));
-    setShowNotifications(false);
-  };
+
   const [messages, setMessages] = useState([
     {
       type: "assistant",
@@ -103,148 +96,12 @@ export default function AIAssistant() {
     handleSendMessage(question);
   };
 
-  //To handle user logout, clearing session and redirecting to sign-in page.
-  const handleLogout = () => {
-    logout();
-    navigate('/sign-in');
-  };
+  
 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 px-6 py-4 sticky top-0 z-50">
-        <div className="max-w-[95%] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Logo />
-            <Link to="/learning" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="19" y1="12" x2="5" y2="12" />
-                <polyline points="12 19 5 12 12 5" />
-              </svg>
-              Back to Education Hub
-            </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            {/* Home */}
-            <Link to="/dashboard" className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Go to Dashboard">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A5565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-            </Link>
-
- <div className="flex items-center gap-4">
-                  {/* Notification */}
-                  <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z"
-                        stroke="#4A5565"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"
-                        stroke="#4A5565"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                
-      {unreadCount > 0 && (
-        <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
-        </span>
-      )}
-                  </button>
-
-                                   {showNotifications && (
-        <div className="
-          /* Position & Vertical Gap */
-          absolute top-[75px] z-[100] right-[10px] md:right-20  max-w-[60vw] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden 
-        animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-200 ease-out
-        ">
-          {/* Header Section */}
-          <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50 gap-5">
-            <h4 className="font-bold text-gray-800 font-poppins">Notifications</h4>
-            <button 
-              onClick={markAllAsRead} 
-              className="text-xs text-[#1E3A8A] font-bold hover:text-[#0F766E] transition-colors"
-            >
-              Mark all as read
-            </button>
-          </div>
-      
-          {/* List Section */}
-          <div className="max-h-[400px] overflow-y-auto scrollbar-hide">
-            {notifications.length > 0 ? (
-              notifications.map(n => (
-                <div 
-                  key={n.id} 
-                  className={`
-                    p-4 border-b border-gray-50 flex gap-3 transition-all cursor-pointer
-                    hover:bg-gray-50 active:bg-gray-100
-                    ${n.unread ? 'bg-blue-50/30' : 'bg-white'}
-                  `}
-                >
-                  {/* Status Indicator */}
-                  <div className={`w-2 h-2 mt-2 rounded-full flex-shrink-0 ${n.unread ? 'bg-[#1E3A8A]' : 'bg-transparent'}`} />
-                  
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start gap-2">
-                      <h5 className={`text-sm font-inter ${n.unread ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>
-                        {n.title}
-                      </h5>
-                      <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">{n.time}</span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1 leading-relaxed font-inter">
-                      {n.desc}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="p-12 text-center text-gray-400 text-sm font-inter">
-                No notifications yet
-              </div>
-                )}
-          </div>
-          
-      
-        </div>
-      )}
-
-
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center font-semibold">{user ? getInitials(user): "U"}</div>
-              <div className="hidden md:block">
-                <div className="font-semibold text-sm text-[#333]">{user?.firstName}{user?.lastName}</div>
-                <div className="text-xs text-[#9CA3AF]">{user?.job_title || 'Add Job Title'}</div>
-              </div>
-            </div>
-
-            <button onClick={handleLogout} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M7.5 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H7.5" stroke="#4A5565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M13.3333 14.1667L17.5 10L13.3333 5.83334" stroke="#4A5565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M17.5 10H7.5" stroke="#4A5565" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        </div>
-      </header>
+     <Navbar />
 
       <main className="max-w-[95%] mx-auto px-4 py-6">
         {/* Hero Section */}

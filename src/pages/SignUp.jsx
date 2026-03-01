@@ -9,7 +9,7 @@ import { Alert } from "../components/Alert";
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const { setUser, showAlert } = useAppContext();
+  const { setUser, showAlert, register } = useAppContext();
   const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
   const [formData, setFormData] = useState({
     firstName: "",
@@ -31,23 +31,23 @@ export default function SignUp() {
       return;
     }
     try {
-      const payload = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password
+      const res = await register(formData);
+      
+      if (res.success) {
+        
+        setAlert({ show: true, message: "Account created successfully! Please check your email.", type: "success"});
+        console.log("Backend error", res);
+        setTimeout(() => {
+          navigate("/complete-profile")
+        }, 3000);
+      } else {
+        setAlert({ show: true, message: res.message, type: "error"});
       }
-    const res = await api.post('/auth/register', payload);
-    setAlert({ show: true, message: res.data.message, type: "success"});
-
-    setTimeout(() => {
-      navigate("/check-email")
-    }, 3000);
-  } catch (err) {
-    const errorMsg = err.response?.data?.message || "Registration failed. Please try again";
-    setAlert({ show: true, message: errorMsg, type: "error"});
-  }
-};
+      
+    } catch (err) {
+      setAlert({ show: true, message: "Registration failed. Please try again", type: "error"});
+    }
+  };
 
 
   //Added - a developer bypass for testing purposes
@@ -63,9 +63,11 @@ export default function SignUp() {
     emailVerified: true,       
     isVerified: true,           
     hasCompletedEducation: true, 
+    profile_completed: true,
     createdAt: new Date().toISOString(),
   };
-
+  
+  localStorage.setItem('fs_token', 'dev-bypass-token-123');
   localStorage.setItem('fs_user', JSON.stringify(devUser));
   setUser(devUser);
   navigate("/dashboard");
@@ -80,7 +82,6 @@ export default function SignUp() {
     >
       <div className="w-full max-w-[576px] flex flex-col items-center gap-7">
         {/* Logo */}
-     {/* Logo Header - Fixed! */}
 <div className="mb-2 transform scale-125 origin-center">
   <Logo />
 </div>

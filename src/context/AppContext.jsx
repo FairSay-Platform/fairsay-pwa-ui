@@ -1,27 +1,21 @@
-//Bridge for the global state of the app, such as user progress and form access
-
-import React, { createContext, useState,  useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from '../services/api';
 
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  //For the core user & session state
   const [user, setUser] = useState(null);
-  const [alert, setAlert] = useState(null);//For the notification/alert system
-  const [loading, setLoading] = useState(true); //For handling initial loading state, such as checking for existing sessions or fetching user data on app start
- const [notifications, setNotifications] = useState(() => {
+  const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(true); 
+  const [notifications, setNotifications] = useState(() => {
     const saved = localStorage.getItem('fs_notifications');
     return saved ? JSON.parse(saved) : [];
   });
 
-
-  // Sync notifications to localStorage
   useEffect(() => {
     localStorage.setItem('fs_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
-  // 2. Fetch fresh notifications from the backend on login/app start
   useEffect(() => {
     const syncNotifications = async () => {
       try {
@@ -34,7 +28,9 @@ export const AppProvider = ({ children }) => {
       }
     };
 
-    if (user) syncNotifications();
+    if (user && user.id && !user.id.toString().startsWith('dev-')) {
+       syncNotifications();
+    }
   }, [user]);
 
   const addNotification = (title, desc, type = 'info') => {
@@ -46,7 +42,7 @@ export const AppProvider = ({ children }) => {
       unread: true,
       timestamp: 'Just now'
     };
-    setNotifications(prev => [newNotif, ...prev].slice(0, 20)); // Keep last 20
+    setNotifications(prev => [newNotif, ...prev].slice(0, 20));
   };
     
   const markAllAsRead = async () => {
@@ -54,25 +50,48 @@ export const AppProvider = ({ children }) => {
     setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
 
     try {
-      await api.put('/notifications/read-all');
+      if (user && !user.id.toString().startsWith('dev-')) {
+        await api.put('/notifications/read-all');
+      }
     } catch (err) {
       console.error("Failed to sync notifications to server, rolling back.");
       setNotifications(previousState);
     }
   };
 
-  //To trigger and auto-dismiss alerts after 4 seconds
-  const showAlert = (message, type= 'info') => {
+  // To trigger and show alerts after 4 seconds
+  const showAlert = (message, type = 'info') => {
     setAlert({ message, type });
     setTimeout(() => setAlert(null), 4000);
   };
 
-
+  // Sign-up
   const register = async (userData) => {
     try {
-      const res = await api.post('/auth/register', userData);
+      const backendData = {
+        first_name: userData.firstName,
+        last_name: userData.lastName,
+        email: userData.email,
+        password: userData.password
+      };
 
-      //To trigger an alert to check email 
+      const res = await api.post('/auth/register', backendData);
+      const { token, user: userBackendData } = res.data;
+
+      if (token) {
+        localStorage.setItem('fs_token', token);
+
+        const normalizedUser = {
+          ...userBackendData,
+          firstName: userBackendData.first_name,
+          lastName: userBackendData.last_name,
+          // Attach admin flag dynamically
+          isAdmin: userBackendData.role === 'admin' || userBackendData.is_admin === true
+        };
+        setUser(normalizedUser);
+
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      }
       showAlert(res.data.message, "success");
       return { success: true };
     } catch (err) {
@@ -80,80 +99,82 @@ export const AppProvider = ({ children }) => {
       showAlert(errorMsg, "error");
       return { success: false, message: errorMsg };
     }
-  }
+  };
 
-  //Login
-const login = async (email, password) => {
-  try {
-    const res = await api.post('/auth/login', { email, password});
-    const { token, user: userData } = res.data;
+  // Login
+  const login = async (email, password) => {
+    try {
+      const res = await api.post('/auth/login', { email, password});
+      const { token, user: userData } = res.data;
 
-    const normalizedUser = {
-      ...userData, 
-      firstName: userData.first_name,
-      lastName: userData.last_name,
-    };
+      const normalizedUser = {
+        ...userData, 
+        firstName: userData.first_name,
+        lastName: userData.last_name,
+        // Attach admin flag dynamically
+        isAdmin: userData.role === 'admin' || userData.is_admin === true
+      };
 
-    localStorage.setItem('fs_token', token);
-    setUser(normalizedUser);
-    return { success: true, user: normalizedUser }; 
-  } catch (err) {
-    return { success: false, message: err.response?.data?.message || "Login failed"};
-  }
-};
+      localStorage.setItem('fs_token', token);
+      setUser(normalizedUser);
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || "Login failed"};
+    }
+  };
 
- const logout = () => {
+  // Logout
+  const logout = () => {
     localStorage.removeItem('fs_token');
-    localStorage.removeItem('fs_user'); //To clear dev bypass also
+    localStorage.removeItem('fs_user');
     setUser(null);
   };
 
-//Update user
-const updateUser = async (updatedData) => {
-  try {
-    if (!user?.id?.startsWith('dev-')) {
-  await api.put('/auth/profile', updatedData);
+  // To update user
+  const updateUser = async (updatedData) => {
+    try {
+      if (!user?.id?.toString().startsWith('dev-')) {
+        await api.put('/auth/profile', updatedData);
+      }
+
+      setUser(prev => ({ ...prev, ...updatedData, profile_completed: true}));
+      addNotification("Profile Updated", "Your account information was saved successfully", "success");
+      showAlert("Profile updated successfully!", "success");
+      return true;
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || "Update failed";
+      console.error("Profile update failed", err);
+      addNotification("Update Failed", "We couldn't save your profile changes", "error");
+      showAlert(errorMsg, "error");
+      return false;
     }
+  };
 
-  setUser(prev => ({ ...prev, ...updatedData, profile_completed: true}));
-
-  addNotification("Profile Updated", "Your account information was saved successfully", "success");
-  showAlert("Profile updated successfully!", "success");
-  return true;
-} catch (err) {
-  const errorMsg = err.response?.data?.message || "Update failed"
-  console.error("Profile update failed", err);
-  addNotification("Update Failed", "We couldn't save your profile changes", "error");
-  showAlert(errorMsg, "error")
-  return false;
-};
-};
-
-
-//To attach token to axios headers when user state changes
+  // To attach token to axios headers when user state changes
   useEffect(() => {
     const token = localStorage.getItem('fs_token');
-    if (token) {
+    if (token && token !== 'dev-bypass-token-123') {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
       delete api.defaults.headers.common['Authorization'];
     }
   }, [user]);
 
-
+  // To check for existing user session on app load
   useEffect(() => {
-    //To check for existing user session on app load
     const checkSession = async () => {
       const token = localStorage.getItem('fs_token');
       const devUser = localStorage.getItem('fs_user');
 
-      if (token) {
+      if (token && token !== 'dev-bypass-token-123') {
         try {
           const res = await api.get('/protected');
-         const normalized = {
+          const normalized = {
             ...res.data.user,
             firstName: res.data.user.first_name,
-            lastName: res.data.user.last_name
+            lastName: res.data.user.last_name,
+            // Attach admin flag dynamically
+            isAdmin: res.data.user.role === 'admin' || res.data.user.is_admin === true
           };
           setUser(normalized);
         } catch (err) {
@@ -161,7 +182,6 @@ const updateUser = async (updatedData) => {
           logout();
         }
       } else if (devUser) {
-        //For the developer bypass
         setUser(JSON.parse(devUser));
       }
       setLoading(false);
@@ -169,10 +189,53 @@ const updateUser = async (updatedData) => {
     checkSession();
   }, []);
 
+  const devLogin = (persona) => {
+  const personas = {
+    admin: {
+      id: 'dev-admin-1',
+      firstName: 'Dev',
+      lastName: 'Admin',
+      email: 'admin@fairsay.dev',
+      role: 'admin',
+      isAdmin: true,
+      isVerified: true,
+      educated: true
+    },
+    whistleblower: {
+      id: 'dev-user-1',
+      firstName: 'John',
+      lastName: 'Whistleblower',
+      email: 'john@fairsay.dev',
+      role: 'user',
+      isAdmin: false,
+      isVerified: true,
+      educated: true
+    },
+    newbie: {
+      id: 'dev-user-2',
+      firstName: 'New',
+      lastName: 'User',
+      email: 'new@fairsay.dev',
+      role: 'user',
+      isAdmin: false,
+      isVerified: false,
+      educated: false
+    }
+  };
 
- 
+  const selectedPersona = personas[persona];
+  if (selectedPersona) {
+    localStorage.setItem('fs_token', 'dev-bypass-token-123');
+    localStorage.setItem('fs_user', JSON.stringify(selectedPersona));
+    setUser(selectedPersona);
+    showAlert(`Logged in as ${selectedPersona.firstName} (Dev Mode)`, "success");
+    return { success: true };
+  }
+  return { success: false };
+};
+
   return (
-    <AppContext.Provider value={{ user, setUser,register,  login, updateUser, loading, alert, showAlert, logout, notifications, addNotification, markAllAsRead }}>
+    <AppContext.Provider value={{ user, setUser, register, login, updateUser, loading, alert, showAlert, logout, notifications, addNotification, markAllAsRead, devLogin }}>
       {children}
     </AppContext.Provider>
   );

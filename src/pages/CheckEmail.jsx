@@ -1,6 +1,5 @@
 import Logo from "../components/Logo";
 import { Link, useLocation } from "react-router-dom";
-import { APP_NAME } from "../utils/constants";
 
 export default function CheckEmail() {
 
@@ -17,7 +16,6 @@ export default function CheckEmail() {
         {/* Logo */}
         <div className="flex items-center gap-2">
                             <div className="w-10 h-10"><Logo /></div>
-                            <span className="text-[36px] font-bold font-poppins text-[#1e3a8a]">{APP_NAME}</span>
                           </div>
 
         {/* Main Card */}
