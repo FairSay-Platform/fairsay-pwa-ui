@@ -41,31 +41,43 @@ function App() {
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/check-email" element={<CheckEmail />} />
-          
+
           {/* Dashboard - Logged in users only */}
-          <Route path="/dashboard" element={
-            <ProtectedRoutes>
-              <Dashboard />
-            </ProtectedRoutes>
-          } />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+                <Dashboard />
+              </ProtectedRoutes>
+            }
+          />
           <Route path="/home" element={<Navigate to="/dashboard" replace />} />
 
           {/* Onboarding & Verification */}
-          <Route path="/complete-profile" element={
-            <ProtectedRoutes>
-              <CompleteProfile />
-            </ProtectedRoutes>
-          } />
-          <Route path="/employee-verification" element={
-            <ProtectedRoutes>
-              <EmployeeVerification />
-            </ProtectedRoutes>
-          } />
-          <Route path="/account-success" element={
-            <ProtectedRoutes>
-              <AccountSuccess />
-            </ProtectedRoutes>
-          } />
+          <Route
+            path="/complete-profile"
+            element={
+              <ProtectedRoutes>
+                <CompleteProfile />
+              </ProtectedRoutes>
+            }
+          />
+          <Route
+            path="/employee-verification"
+            element={
+              <ProtectedRoutes>
+                <EmployeeVerification />
+              </ProtectedRoutes>
+            }
+          />
+          <Route
+            path="/account-success"
+            element={
+              <ProtectedRoutes>
+                <AccountSuccess />
+              </ProtectedRoutes>
+            }
+          />
 
           {/* User Profile Management */}
           <Route path="/profile" element={
@@ -85,11 +97,14 @@ function App() {
           } />
 
           {/* Complaint Management - Requires Profile Verification */}
-          <Route path="/my-complaints" element={
-            <ProtectedRoutes step={APP_STEPS.PROFILE_COMPLETION}>
-              <MyComplaints />
-            </ProtectedRoutes>
-          } />
+          <Route
+            path="/my-complaints"
+            element={
+              <ProtectedRoutes step={APP_STEPS.PROFILE_COMPLETION}>
+                <MyComplaints />
+              </ProtectedRoutes>
+            }
+          />
 
           {/* Filing & Education - Requires Education Completion */}
           <Route path="/file-complaint" element={

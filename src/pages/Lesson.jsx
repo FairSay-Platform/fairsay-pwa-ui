@@ -62,8 +62,20 @@ export default function Lesson() {
           <div className="max-w-[95%] mx-auto flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Logo />
-              <Link to="/learning" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <Link
+                to="/learning"
+                className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <line x1="19" y1="12" x2="5" y2="12" />
                   <polyline points="12 19 5 12 12 5" />
                 </svg>
@@ -167,7 +179,16 @@ export default function Lesson() {
                   className="flex items-start gap-2.5 p-2.5 rounded-xl hover:bg-gray-50 text-gray-400 transition-all text-sm"
                 >
                   <div className="flex-shrink-0 mt-0.5">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#9CA3AF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <circle cx="12" cy="8" r="6" />
                       <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
                     </svg>
@@ -202,14 +223,32 @@ export default function Lesson() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
               {/* Meta */}
               <div className="flex items-center gap-2 text-gray-400 text-sm mb-3">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
                   <line x1="8" y1="21" x2="16" y2="21" />
                   <line x1="12" y1="17" x2="12" y2="21" />
                 </svg>
                 <span>Lesson {lesson.id} of {lessons.length}</span>
                 <span>•</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
@@ -222,7 +261,16 @@ export default function Lesson() {
 
               {isCurrentLessonCompleted && (
                 <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-sm font-semibold px-3 py-1.5 rounded-full mb-6">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
@@ -235,10 +283,15 @@ export default function Lesson() {
 
               {lesson.learnItems && lesson.learnItems.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-[#1E3A8A] font-bold text-base mb-3">What You'll Learn:</h3>
+                  <h3 className="text-[#1E3A8A] font-bold text-base mb-3">
+                    What You'll Learn:
+                  </h3>
                   <ul className="space-y-2">
                     {lesson.learnItems.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-gray-600">
+                      <li
+                        key={idx}
+                        className="flex items-start gap-2 text-gray-600"
+                      >
                         <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
                         {item}
                       </li>
@@ -249,18 +302,26 @@ export default function Lesson() {
 
               {lesson.sections && lesson.sections.map((section, sIdx) => (
                 <div key={sIdx} className="mb-6">
-                  <h3 className="text-[#1E3A8A] font-bold text-base mb-3">{section.heading}</h3>
+                  <h3 className="text-[#1E3A8A] font-bold text-base mb-3">
+                    {section.heading}
+                  </h3>
                   {section.intro && (
                     <p className="text-gray-600 mb-3">{section.intro}</p>
                   )}
                   {section.items && section.items.length > 0 && (
                     <ul className="space-y-2">
                       {section.items.map((item, iIdx) => (
-                        <li key={iIdx} className="flex items-start gap-2 text-gray-600">
+                        <li
+                          key={iIdx}
+                          className="flex items-start gap-2 text-gray-600"
+                        >
                           <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2 flex-shrink-0" />
                           {item.label ? (
                             <span>
-                              <strong className="text-gray-800">{item.label}</strong> {item.text}
+                              <strong className="text-gray-800">
+                                {item.label}
+                              </strong>{" "}
+                              {item.text}
                             </span>
                           ) : (
                             item.text
@@ -270,13 +331,19 @@ export default function Lesson() {
                     </ul>
                   )}
                   {section.callout && (
-                    <SectionCallout type={section.callout.type} text={section.callout.text} />
+                    <SectionCallout
+                      type={section.callout.type}
+                      text={section.callout.text}
+                    />
                   )}
                 </div>
               ))}
 
               {lesson.callout && (
-                <SectionCallout type={lesson.callout.type} text={lesson.callout.text} />
+                <SectionCallout
+                  type={lesson.callout.type}
+                  text={lesson.callout.text}
+                />
               )}
 
               {/* Navigation */}
@@ -286,7 +353,16 @@ export default function Lesson() {
                   disabled={currentId === 1}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <line x1="19" y1="12" x2="5" y2="12" />
                     <polyline points="12 19 5 12 12 5" />
                   </svg>
