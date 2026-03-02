@@ -18,10 +18,26 @@ export const AppProvider = ({ children }) => {
 
   useEffect(() => {
     const syncNotifications = async () => {
-      try {
+       try {
         const res = await api.get('/notifications');
         if (res.data.success) {
-          setNotifications(res.data.notifications);
+          setNotifications(prev => {
+            const serverNotifs = res.data.notifications;
+            
+            //To merge server notifications. If already marked it as read locally, forces it to stay read
+            const merged = serverNotifs.map(sn => {
+              const localMatch = prev.find(pn => pn.id === sn.id);
+              if (localMatch && localMatch.unread === false) {
+                return { ...sn, unread: false };
+              }
+              return sn;
+            });
+
+            const serverIds = serverNotifs.map(sn => sn.id);
+            const localOnly = prev.filter(pn => !serverIds.includes(pn.id));
+
+            return [...localOnly, ...merged].slice(0, 20); 
+          });
         }
       } catch (err) {
         console.log("System working in offline mode or backend unreachable.");

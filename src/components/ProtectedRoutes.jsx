@@ -24,8 +24,10 @@ const isDevAdmin =
     //For the whistleblower bypass
     if (user?.isWhistleblower) return children;
 
-    //If not logged in, redirect to sign in
-    if (!user) return <Navigate to="/sign-in" state={{ from: location }} replace />;
+  //To check verification
+  if (step === APP_STEPS.PROFILE_COMPLETION && !user.isVerified) {
+    return <Navigate to="/account-success" replace />;
+  }
 
   
     //To check if the route requires admin privileges. 

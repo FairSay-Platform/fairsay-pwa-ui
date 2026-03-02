@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
-
+import { useAppContext } from "../context/AppContext"; // <-- Imported context!
 
 const NEXT_STEPS = [
   {
@@ -31,9 +31,30 @@ const REMINDERS = [
 ];
 
 export default function ComplaintSuccess() {
-
   const location = useLocation();
-  const complainId = location.state?.trackingId || "ID not found";
+  const complaintId = location.state?.trackingId || "ID not found"; 
+  const { addNotification } = useAppContext();
+
+  //Added - Click to copy feature
+  const handleCopyId = () => {
+    if (complaintId !== "ID not found") {
+      navigator.clipboard.writeText(complaintId);
+      addNotification(
+        "ID Copied!", 
+        `Tracking ID ${complaintId} copied to your clipboard.`, 
+        "success"
+      );
+    }
+  };
+
+  //Added - Demo interaction for the AI button
+  const handleAIAssistant = () => {
+    addNotification(
+      "AI Assistant Booting...", 
+      "The FairSay AI legal assistant is preparing your case context.", 
+      "info"
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
@@ -79,7 +100,11 @@ export default function ComplaintSuccess() {
           </p>
 
           {/* Complaint ID card */}
-          <div className="border-2 border-[#1E3A8A] bg-blue-50 rounded-2xl p-4 mb-5">
+          <div 
+            onClick={handleCopyId}
+            className="border-2 border-[#1E3A8A] bg-blue-50 rounded-2xl p-4 mb-5 cursor-pointer hover:bg-blue-100 transition-colors group"
+            title="Click to copy ID"
+          >
             <div className="flex items-center justify-center gap-2 mb-2.5">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#1E3A8A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -90,7 +115,7 @@ export default function ComplaintSuccess() {
               </svg>
               <span className="font-bold text-gray-900 text-xs">Your Complaint ID</span>
             </div>
-            <div className="bg-white rounded-xl px-3.5 py-2.5 text-center mb-2.5">
+            <div className="bg-white rounded-xl px-3.5 py-2.5 text-center mb-2.5 group-hover:shadow-sm transition-shadow">
               <span
                 className="text-[22px] sm:text-[27px] font-bold text-[#1E3A8A] tracking-widest"
                 style={{ fontFamily: 'Inter, sans-serif' }}
@@ -98,8 +123,8 @@ export default function ComplaintSuccess() {
                 {complaintId}
               </span>
             </div>
-            <p className="text-center text-[11px] text-gray-500">
-              Use this ID to track your complaint status and communicate with our team.
+            <p className="text-center text-[11px] text-[#1E3A8A] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              Click to copy to clipboard
             </p>
           </div>
 
@@ -157,7 +182,11 @@ export default function ComplaintSuccess() {
                 <path d="M10 4.16602L15.8333 9.99935L10 15.8327" stroke="#1E3A8A" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>
-            <button className="text-gray-500 text-xs font-semibold py-2 hover:text-gray-700 transition-colors">
+           
+            <button 
+              onClick={handleAIAssistant}
+              className="text-gray-500 text-xs font-semibold py-2 hover:text-[#1E3A8A] transition-colors"
+            >
               Need Help? Talk to AI Assistant
             </button>
           </div>

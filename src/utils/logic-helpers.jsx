@@ -215,6 +215,11 @@ export const completeCourse = (courseId, score, userId) => {
       "Module Completed",
       `You completed ${courseId.replace(/-/g, '')} with a score of ${score}%`
     );
+
+    const step = currentIndex + 1;
+    api.patch(`/users/progress`, { lessonCompleted: step }).catch(err => {
+      console.error("Failed to update user progress on server. Local progress saved", err);
+    });
   }
   return progress;
 };

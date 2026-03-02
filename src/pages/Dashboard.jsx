@@ -12,6 +12,7 @@ import chatbubble from '../images/Chatbubble.svg';
 import ribbon from '../images/Ribbon.svg';
 import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/logic-helpers";
 
+
  export default function Dashboard() {
   const { user, logout } = useAppContext();
   const navigate = useNavigate();
@@ -174,7 +175,7 @@ import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/l
               </div>
             </section>
 
-<div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mt-10 bg-white p-6 rounded-xl border border-gray-100 shadow-sm w-max-full">
+<div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mt-10 bg-white p-6 rounded-xl border border-gray-100 shadow-sm max-w-full">
 
             {/* Recent Activity */}
             <section className="lg:col-span-8 bg-white rounded-xl border border-gray-300 p-8 shadow-lg">
@@ -269,16 +270,18 @@ function ActivityItem({ log }) {
   const bgColor = isDanger ? 'bg-[#FEFCE8]' : isEdu ? 'bg-[#F0FDF4]' : 'bg-[#EFF6FF]';
   const borderColor = isDanger ? 'border-yellow-100' : isEdu ? 'border-green-100' : 'border-blue-100';
 
+  const iconBgColor = isDanger ? 'bg-[#F0B100]/70' : isEdu ? 'bg-[#0F766E]/70' : 'bg-[#1E3A8A]/70';
+
   return (
     <div className={`p-4 rounded-xl border flex items-center gap-4 transition-all hover:shadow-sm ${bgColor} ${borderColor}`}>
-      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm text-gray-500">
-        {/* Call the dynamic icon function */}
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${iconBgColor} shadow-sm text-gray-500`}>
+        {/* To call the dynamic icon function */}
         {getActivityIcon(log.action)}
       </div>
       <div className="flex-1">
         <h5 className="text-[16px] font-bold text-gray-800 font-inter">{log.action}</h5>
         <p className="text-[12px] text-gray-500 leading-relaxed font-inter">{log.details}</p>
-         <span className="text-[12px] text-gray-400 font-medium font-inter whitespace-nowrap">{log.timestamp.includes('now') ? log.timestamp : new Date(log.timestamp).toLocaleString()}</span>
+         <span className="text-[12px] text-gray-400 font-medium font-inter whitespace-nowrap">{log?.timestamp?.includes('now') ? log.timestamp : new Date(log.timestamp).toLocaleString()}</span>
       </div>
     </div>
   );

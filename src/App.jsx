@@ -35,7 +35,6 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          
           {/* Authentication Routes */}
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
@@ -46,7 +45,7 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+              <ProtectedRoutes>
                 <Dashboard />
               </ProtectedRoutes>
             }
@@ -107,35 +106,59 @@ function App() {
           />
 
           {/* Filing & Education - Requires Education Completion */}
-          <Route path="/file-complaint" element={
-            <ProtectedRoutes step={APP_STEPS.EDUCATION}>
-              <ComplaintForm />
-            </ProtectedRoutes>
-          } />
-          <Route path="/complaint-success" element={
-            <ProtectedRoutes step={APP_STEPS.EDUCATION}>
-              <ComplaintSuccess />
-            </ProtectedRoutes>
-          } />
-          <Route path="/complaint-feedback" element={
-            <ProtectedRoutes>
-              <ComplaintFeedback />
-            </ProtectedRoutes>
-          } />
+          <Route
+            path="/file-complaint"
+            element={
+              <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+                <ComplaintForm />
+              </ProtectedRoutes>
+            }
+          />
+          <Route
+            path="/complaint-success"
+            element={
+              <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+                <ComplaintSuccess />
+              </ProtectedRoutes>
+            }
+          />
 
           {/* Learning Hub */}
-          <Route path="/learning" element={<ProtectedRoutes><EducationHub /></ProtectedRoutes>} />
-          <Route path="/learning/lesson/:courseId/:lessonId" element={<ProtectedRoutes><Lesson /></ProtectedRoutes>} />
-          <Route path="/learning/quiz/:courseId" element={<ProtectedRoutes><Quiz /></ProtectedRoutes>} />
-          
+          <Route
+            path="/learning"
+            element={
+              <ProtectedRoutes>
+                <EducationHub />
+              </ProtectedRoutes>
+            }
+          />
+          <Route
+            path="/learning/lesson/:courseId/:lessonId"
+            element={
+              <ProtectedRoutes>
+                <Lesson />
+              </ProtectedRoutes>
+            }
+          />
+          <Route
+            path="/learning/quiz/:courseId"
+            element={
+              <ProtectedRoutes>
+                <Quiz />
+              </ProtectedRoutes>
+            }
+          />
+
           {/* AI RAG */}
-          <Route path="/ai-assistant" element={
-            <ProtectedRoutes>
-              <AIAssistant />
-            </ProtectedRoutes>
-          } />
-          
-          {/* Whistleblowing Route */}
+          <Route
+            path="/ai-assistant"
+            element={
+              <ProtectedRoutes>
+                <AIAssistant />
+              </ProtectedRoutes>
+            }
+          />
+          {/*Whistleblowing Route*/}
           <Route path="/whistleblowing" element={
             <ProtectedRoutes>
               <Whistleblowing />

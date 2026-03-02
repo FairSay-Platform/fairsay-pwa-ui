@@ -23,7 +23,6 @@ const optionalModules = [
 ];
 
 export default function EducationHub() {
-  const { user, logout } = useAppContext();
 
   //Dynamically calculate progress
   const enrichedCourses = courses.map((course) => {

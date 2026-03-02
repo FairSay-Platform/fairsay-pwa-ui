@@ -3,20 +3,22 @@ import { useState, useEffect, useMemo } from "react";
 import api from "../services/api";
 import { COMPLAINT_STATUS, COMPLAINT_STATUS_STYLES, COMPLAINT_STAT_CARDS, PRIORITY_LIST } from "../utils/constants";
 import Navbar from "../components/Navbar";
-
+import { useAppContext } from "../context/AppContext"; 
 
 export default function MyComplaints() {
-
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
+  
+  //Notification tool
+  const { addNotification } = useAppContext();
 
-  //To sync backend status to the colours
+  // To sync backend status to the colours
   const getStatusStyles = (status) => {
-  return COMPLAINT_STATUS_STYLES[status] || COMPLAINT_STATUS_STYLES['pending'];
+    return COMPLAINT_STATUS_STYLES[status] || COMPLAINT_STATUS_STYLES['pending'];
   };
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function MyComplaints() {
               category: c.complaint_type || "General",
               categoryColor: "bg-gray-100 text-gray-700",
               
-              //For fields the backend doesn't have yet:
+              // For fields the backend doesn't have yet:
               priority: "Standard Priority",
               priorityColor: "border border-gray-300 text-gray-600",
               assignedTo: "Review Team",
@@ -58,17 +60,17 @@ export default function MyComplaints() {
     fetchComplaints();
   }, []);
 
-  //For the filter logic 
+  // For the filter logic 
   const filteredComplaints = useMemo(() => {
     return complaints.filter((c) => {
-      //To check search query against title, description, and id
+      // To check search query against title, description, and id
       const matchesSearch = 
         searchQuery === "" || 
         c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.id.toLowerCase().includes(searchQuery.toLowerCase());
 
-      //To check dropdowns
+      // To check dropdowns
       const matchesStatus = statusFilter === "" || c.status === statusFilter;
       const matchesPriority = priorityFilter === "" || c.priority === priorityFilter;
 
@@ -76,22 +78,40 @@ export default function MyComplaints() {
     });
   }, [complaints, searchQuery, statusFilter, priorityFilter]);
 
-  //To calculate dynamic stats for the top cards
- const statValues = {
-  total: complaints.length,
-  review: complaints.filter(c => c.status === "Under Review").length,
-  resolved: complaints.filter(c => c.status === "Resolved").length,
-  avgTime: "24h"
- };
+  // To calculate dynamic stats for the top cards
+  const statValues = {
+    total: complaints.length,
+    review: complaints.filter(c => c.status === "Under Review").length,
+    resolved: complaints.filter(c => c.status === "Resolved").length,
+    avgTime: "24h"
+  };
 
- if (loading) {
+  // Added - Click to copy tracking ID feature
+  const handleCopyId = (id) => {
+    navigator.clipboard.writeText(id);
+    addNotification(
+      "Tracking ID Copied", 
+      `ID ${id} copied to your clipboard.`, 
+      "info"
+    );
+  };
+
+  // Added - Quick demo interaction for the "More Filters" button
+  const handleMoreFilters = () => {
+    addNotification(
+      "Advanced Filters", 
+      "Advanced filtering capabilities are coming soon! In the meantime, use the search bar to quickly find specific complaints.", 
+      "info"
+    );
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F766E]"></div>
       </div>
     );
   }
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
@@ -170,7 +190,10 @@ export default function MyComplaints() {
           </option>  
           ))}
           </select>
-          <button className="flex items-center gap-1.5 px-3.5 py-2 border border-gray-200 rounded-lg text-xs bg-white text-gray-600 hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={handleMoreFilters} // Wired up to notification
+            className="flex items-center gap-1.5 px-3.5 py-2 border border-gray-200 rounded-lg text-xs bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M22 3H2L10 12.46V19L14 21V12.46L22 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -205,13 +228,18 @@ export default function MyComplaints() {
                   </div>
                   <p className="text-xs text-gray-500 mb-2.5">{complaint.description}</p>
                   <div className="flex items-center gap-3.5 text-[11px] text-gray-400 flex-wrap">
-                    <span className="flex items-center gap-1">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                     
+                    <button 
+                      onClick={() => handleCopyId(complaint.id)}
+                      className="flex items-center gap-1 hover:text-[#0F766E] transition-colors group cursor-pointer"
+                      title="Click to copy Tracking ID"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="group-hover:text-[#0F766E]">
                         <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M14 2V8H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       {complaint.id}
-                    </span>
+                    </button>
                     <span className="flex items-center gap-1">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -233,7 +261,10 @@ export default function MyComplaints() {
                     {complaint.category}
                   </span>
                   <span className="text-[11px] text-gray-400">Assigned: {complaint.assignedTo}</span>
-                  <button className="text-gray-400 hover:text-[#1E3A8A] transition-colors mt-1">
+                  <button 
+                    onClick={() => addNotification("Loading Details", "Fetching case files from the secure server...", "info")} 
+                    className="text-gray-400 hover:text-[#1E3A8A] transition-colors mt-1"
+                  >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

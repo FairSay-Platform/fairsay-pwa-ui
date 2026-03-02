@@ -96,7 +96,10 @@ export default function Lesson() {
   const isCurrentLessonCompleted = completedLessons.includes(lesson.id);
 
   const handlePrev = () => {
-    if (currentId > 1) navigate(`/learning/lesson/${courseId_}/${currentId - 1}`);
+    if (currentId > 1)
+      navigate(`/learning/lesson/${courseId}/${currentId - 1}`);
+    if (currentId > 1)
+      navigate(`/learning/lesson/${courseId}/${currentId - 1}`);
   };
 
   const handleNext = () => {

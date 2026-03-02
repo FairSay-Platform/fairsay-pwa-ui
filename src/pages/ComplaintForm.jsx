@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { COMPLAINT_CATEGORIES, COMPLAINT_STEPS, IMPACT_TYPES, INITIAL_COMPLAINT_FORM_DATA } from "../utils/constants";
-import api from '../services/api'
+import api from '../services/api';
+import { useAppContext } from "../context/AppContext"; // <-- Imported context!
 
 function StepIndicator({ currentStep }) {
   return (
@@ -481,10 +482,11 @@ function Step5({ data, onChange }) {
 
 export default function ComplaintForm() {
   const navigate = useNavigate();
+  // Extracted user and addNotification for the demo bypass and toasts!
+  const { user, addNotification } = useAppContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(INITIAL_COMPLAINT_FORM_DATA);
   
-  // State for tracking DB ID, Loading, and Errors
   const [draftId, setDraftId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -497,60 +499,83 @@ export default function ComplaintForm() {
     setSubmitError(null);
     setIsProcessing(true);
 
+    // CRITICAL FIX: Check if we are using the local Dev User!
+    const isDemo = user?.id?.toString().startsWith('dev-');
+
     try {
       // STEP 1: DRAFT CREATION
       if (currentStep === 1) {
-        const payload = {
-          complaint_type: formData.violationCategory,
-          title: formData.complaintTitle,
-          description: formData.detailedDescription,
-          is_anonymous: formData.keepConfidential
-        };
-        
         if (!draftId) {
-          const res = await api.post('/complaints', payload);
-          setDraftId(res.data.complaintId);
+          if (isDemo) {
+            // Fake a tiny delay and generate a fake DB ID
+            await new Promise(r => setTimeout(r, 600));
+            setDraftId(`DEV-TK-${Math.floor(Math.random() * 90000) + 10000}`);
+            addNotification("Draft Saved Securely", "Your complaint draft has been encrypted and saved.", "success");
+          } else {
+            const payload = {
+              complaint_type: formData.violationCategory,
+              title: formData.complaintTitle,
+              description: formData.detailedDescription,
+              is_anonymous: formData.keepConfidential
+            };
+            const res = await api.post('/complaints', payload);
+            setDraftId(res.data.complaintId);
+            addNotification("Draft Saved Securely", "Your complaint draft has been encrypted and saved.", "success");
+          }
         }
       } 
       
       // STEP 2: INCIDENT DETAILS
       else if (currentStep === 2) {
-        const payload = {
-          dateOfIncident: formData.dateOfIncident,
-          timeOfIncident: formData.timeOfIncident,
-          location: formData.location,
-          isOngoing: formData.isOngoing
-        };
-        await api.put(`/complaints/${draftId}/step-2`, payload); 
+        if (isDemo) {
+          await new Promise(r => setTimeout(r, 400));
+        } else {
+          const payload = {
+            dateOfIncident: formData.dateOfIncident,
+            timeOfIncident: formData.timeOfIncident,
+            location: formData.location,
+            isOngoing: formData.isOngoing
+          };
+          await api.put(`/complaints/${draftId}/step-2`, payload); 
+        }
       } 
       
       // STEP 3: PARTIES INVOLVED
       else if (currentStep === 3) {
-        const payload = {
-          parties: {
-            personsInvolved: formData.personsInvolved,
-            jobTitle: formData.jobTitle,
-            department: formData.department,
-            hasWitnesses: formData.hasWitnesses,
-            witnessInfo: formData.witnessInfo
-          }
-        };
-        await api.post(`/complaints/${draftId}/parties`, payload);
+        if (isDemo) {
+          await new Promise(r => setTimeout(r, 400));
+        } else {
+          const payload = {
+            parties: {
+              personsInvolved: formData.personsInvolved,
+              jobTitle: formData.jobTitle,
+              department: formData.department,
+              hasWitnesses: formData.hasWitnesses,
+              witnessInfo: formData.witnessInfo
+            }
+          };
+          await api.post(`/complaints/${draftId}/parties`, payload);
+        }
       } 
       
       // STEP 4: EVIDENCE UPLOAD
       else if (currentStep === 4) {
         if (formData.evidenceFiles.length > 0) {
-          const filePayload = new FormData();
-          
-          formData.evidenceFiles.forEach(file => {
-            filePayload.append('files', file); 
-          });
-          filePayload.append('description', formData.evidenceDescription);
+          if (isDemo) {
+            await new Promise(r => setTimeout(r, 800));
+            addNotification("Files Uploaded", `${formData.evidenceFiles.length} file(s) securely attached to your case.`, "success");
+          } else {
+            const filePayload = new FormData();
+            formData.evidenceFiles.forEach(file => {
+              filePayload.append('files', file); 
+            });
+            filePayload.append('description', formData.evidenceDescription);
 
-          await api.post(`/complaints/${draftId}/evidence`, filePayload, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
+            await api.post(`/complaints/${draftId}/evidence`, filePayload, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            addNotification("Files Uploaded", `${formData.evidenceFiles.length} file(s) securely attached to your case.`, "success");
+          }
         }
       }
 
@@ -572,13 +597,20 @@ export default function ComplaintForm() {
   const handleSubmit = async () => {
     setIsProcessing(true);
     setSubmitError(null);
+    const isDemo = user?.id?.toString().startsWith('dev-');
 
     try {
-      // FINAL SUBMISSION
-      const res = await api.post(`/complaints/${draftId}/submit`);
-      
-      // Pass the tracking_id to the success screen
-      navigate("/complaint-success", { state: { trackingId: res.data.tracking_id } });
+      if (isDemo) {
+        // Fake final submission delay
+        await new Promise(r => setTimeout(r, 1200));
+        addNotification("Complaint Filed", "Your report has been submitted to the review team.", "success");
+        navigate("/complaint-success", { state: { trackingId: draftId || `DEV-TK-9999` } });
+      } else {
+        // FINAL SUBMISSION
+        const res = await api.post(`/complaints/${draftId}/submit`);
+        addNotification("Complaint Filed", "Your report has been submitted to the review team.", "success");
+        navigate("/complaint-success", { state: { trackingId: res.data.tracking_id } });
+      }
 
     } catch (error) {
       console.error("Submission failed:", error);

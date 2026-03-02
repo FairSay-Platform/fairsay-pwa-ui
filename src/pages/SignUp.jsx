@@ -1,15 +1,12 @@
-import api from '../services/api';
 import Logo from "../components/Logo";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { APP_NAME } from "../utils/constants";
 import { useAppContext } from "../context/AppContext";
-import { Alert } from "../components/Alert";
 
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const { setUser, showAlert, register } = useAppContext();
+  const { showAlert, register } = useAppContext();
   const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
   const [formData, setFormData] = useState({
     firstName: "",
@@ -36,42 +33,18 @@ export default function SignUp() {
       if (res.success) {
         
         setAlert({ show: true, message: "Account created successfully! Please check your email.", type: "success"});
-        console.log("Backend error", res);
         setTimeout(() => {
           navigate("/complete-profile")
         }, 3000);
       } else {
         setAlert({ show: true, message: res.message, type: "error"});
       }
-      
-    } catch (err) {
+       } catch (err) {
       setAlert({ show: true, message: "Registration failed. Please try again", type: "error"});
     }
   };
 
 
-  //Added - a developer bypass for testing purposes
-  const isDevelopment = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const handleDeveloperBypass = () => {
-  if (!isDevelopment) return; // Hide button in production
-  const devUser = {
-    id: 'dev-' + Date.now(),
-    firstName: "Dev",
-    lastName: "Mode",
-    email: "dev@fairsay.test",
-    isWhistleblower: false,
-    emailVerified: true,       
-    isVerified: true,           
-    hasCompletedEducation: true, 
-    profile_completed: true,
-    createdAt: new Date().toISOString(),
-  };
-  
-  localStorage.setItem('fs_token', 'dev-bypass-token-123');
-  localStorage.setItem('fs_user', JSON.stringify(devUser));
-  setUser(devUser);
-  navigate("/dashboard");
-};
 
   return (
     <div
@@ -489,19 +462,6 @@ export default function SignUp() {
           Back to Home
         </Link>
       </div>
-      
-      {/* DEVELOPER BYPASS BUTTON */}
-      {isDevelopment && (
-        <div className="fixed bottom-4 right-4 z-[100]">
-<button
-  type="button"
-  onClick={handleDeveloperBypass}
-  className="fixed bottom-4 right-4 z-[100] bg-red-600 text-white px-4 py-2 rounded-full font-bold shadow-2xl hover:bg-red-700 transition-all border-2 border-white text-xs uppercase tracking-widest"
->
-  🛠️ DEV BYPASS
-</button>
-</div>
-      )}
     </div>
   );
 }

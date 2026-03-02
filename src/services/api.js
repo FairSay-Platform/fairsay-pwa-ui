@@ -1,10 +1,13 @@
 import axios from 'axios';
 
 // Live Render Backend URL
-const API_BASE_URL = "https://fairsay-backend.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+? import.meta.env.VITE_API_BASE_URL + "/api"
+: "https://fairsay-backend.onrender.com/api";
 
 const api = axios.create({
     baseURL: API_BASE_URL,
+    withCredentials: false,
     headers: {
         'Content-Type': 'application/json'
     }
@@ -13,7 +16,7 @@ const api = axios.create({
 // Request Interceptor: Attach JWT for protected workplace reports
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('fs_token');
-    if (token) {
+    if (token && token !== 'dev-bypass-token-123') {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
