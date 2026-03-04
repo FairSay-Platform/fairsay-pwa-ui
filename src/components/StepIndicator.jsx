@@ -1,28 +1,29 @@
-export default function StepIndicator({ steps }) {
+export default function StepIndicator({ steps, variant = "light" }) {
   return (
-    <div className="flex items-center justify-center gap-2 md:gap-3.5 w-full max-w-md mx-auto mb-7">
+    <div className="flex items-center justify-center gap-3 mb-8">
       {steps.map((step, index) => (
-        <div key={step.number} className="flex items-center gap-2 md:gap-3.5">
+        <div key={step.number} className="flex items-center gap-3">
+          {/* Step Circle */}
           <div className="flex items-center gap-2">
             <div
-              className={`w-7 h-7 md:w-7 md:h-7 rounded-full flex items-center justify-center font-semibold text-xs ${
-                step.status === 'completed'
-                  ? 'bg-[#0F766E] text-white'
-                  : step.status === 'current'
-                  ? 'bg-[#1E3A8A] text-white'
-                  : 'bg-[#E5E7EB] text-[#9CA3AF]'
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-inter font-semibold text-sm transition-colors ${
+                step.status === "completed"
+                  ? "bg-fairsay-teal text-white"
+                  : step.status === "current"
+                  ? "bg-fairsay-blue text-white"
+                  : "bg-fairsay-gray-200 text-fairsay-gray-400"
               }`}
             >
-              {step.status === 'completed' ? (
+              {step.status === "completed" ? (
                 <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M13.3333 4L6 11.3333L2.66667 8"
+                    d="M16.6667 5L7.50004 14.1667L3.33337 10"
                     stroke="white"
                     strokeWidth="2"
                     strokeLinecap="round"
@@ -34,17 +35,29 @@ export default function StepIndicator({ steps }) {
               )}
             </div>
             <span
-              className={`hidden md:inline text-sm font-medium ${
-                step.status === 'completed' || step.status === 'current'
-                  ? 'text-[#333]'
-                  : 'text-[#9CA3AF]'
+              className={`font-inter text-sm font-medium ${
+                variant === "dark"
+                  ? step.status === "upcoming"
+                    ? "text-white/50"
+                    : "text-white"
+                  : step.status === "upcoming"
+                  ? "text-fairsay-gray-400"
+                  : "text-fairsay-gray-900"
               }`}
             >
               {step.label}
             </span>
           </div>
+
+          {/* Connector Line */}
           {index < steps.length - 1 && (
-            <div className="w-6 md:w-12 h-0.5 bg-[#E5E7EB]"></div>
+            <div
+              className={`w-8 h-0.5 ${
+                step.status === "completed"
+                  ? "bg-fairsay-teal"
+                  : "bg-fairsay-gray-200"
+              }`}
+            />
           )}
         </div>
       ))}

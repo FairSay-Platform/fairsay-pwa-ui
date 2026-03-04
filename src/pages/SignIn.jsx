@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 
+const BG_IMAGE =
+  "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
+
 export default function SignIn() {
   const navigate = useNavigate();
   const { login, devLogin } = useAppContext();
@@ -15,61 +18,63 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
- e.preventDefault();
-  setAlert({ show: false, message: "", type: "error" });
-  const result = await login(formData.email, formData.password);
-  if (result.success) {
-    if (result.user?.course_completed) {
-      // Here you would handle authentication
-      navigate("/dashboard");
+    e.preventDefault();
+    setAlert({ show: false, message: "", type: "error" });
+    const result = await login(formData.email, formData.password);
+    if (result.success) {
+      if (result.user?.course_completed) {
+        navigate("/dashboard");
+      } else {
+        navigate("/learning");
+      }
     } else {
-      navigate("/learning");
+      setAlert({ show: true, message: result.message, type: "error" });
     }
-  } else {
-    setAlert({ show: true, message: result.message, type: "error" });
-  }
   };
 
-  // Quick login for development (bypasses actual auth, sets a dummy token and user role depending on persona)
+  // Quick login for development
   const handleQuickLogin = (persona) => {
     const res = devLogin(persona);
     if (res.success) {
-      // Dynamic routing based on persona
       if (persona === 'admin') {
         navigate('/admin/dashboard');
       } else if (persona === 'whistleblower') {
         navigate('/whistleblowing');
       } else {
-        navigate('/dashboard'); // newbie or standard user
+        navigate('/dashboard');
       }
     } 
   }
 
   return (
-    <div
-      className="min-h-screen flex justify-center items-center px-4 py-7"
-      style={{
-        background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
-      }}
-    >
-      <div className="w-full max-w-[504px] flex flex-col items-center gap-7">
-        {/* Logo */}
-        <div className="mb-2 transform scale-125 origin-center">
-          <Logo />
-        </div>
+    <div className="min-h-screen relative flex items-center justify-center px-4 py-10">
+      {/* Background image */}
+      <img
+        src={BG_IMAGE}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover object-center"
+      />
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/55" />
 
-        {/* Main Card */}
-        <div className="w-full rounded-2xl bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] p-7">
-          <div className="mb-7 text-center">
-            <h1 className="font-poppins font-bold text-[27px] leading-[32px] text-[#333] mb-2">
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-[448px] flex flex-col items-stretch gap-8">
+        {/* Logo */}
+        <Logo variant="light" />
+
+        {/* Sign In Card */}
+        <div className="bg-white rounded-2xl shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] p-8">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <h1 className="font-poppins font-bold text-[30px] leading-9 text-[#333] mb-2">
               Welcome Back
             </h1>
-            <p className="text-[#4A5565] text-sm">
+            <p className="font-inter text-base leading-6 text-[#4A5565]">
               Sign in to your account to continue
             </p>
           </div>
 
-          {/*For rendering the alert*/}
+          {/* Alert */}
           {alert.show && (
             <div className={`mb-6 p-4 rounded-lg text-sm font-medium border ${
               alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
@@ -78,11 +83,15 @@ export default function SignIn() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-[18px]">
-            {/* Email Address */}
-            <div>
-              <label className="block text-[#333] text-sm font-medium mb-2">
-                Email Address
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email Input */}
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="font-inter font-semibold text-sm leading-5 text-[#333]"
+              >
+                Email address
               </label>
               <div className="relative">
                 <svg
@@ -91,39 +100,41 @@ export default function SignIn() {
                   viewBox="0 0 20 20"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]"
+                  className="absolute left-3 top-[15px] pointer-events-none"
                 >
                   <path
-                    d="M3 3H17C18.1 3 19 3.9 19 5V15C19 16.1 18.1 17 17 17H3C1.9 17 1 16.1 1 15V5C1 3.9 1.9 3 3 3Z"
-                    stroke="#9CA3AF"
-                    strokeWidth="2"
+                    d="M18.3327 5.83398L10.8402 10.6065C10.5859 10.7542 10.2971 10.8319 10.0031 10.8319C9.70907 10.8319 9.42027 10.7542 9.16602 10.6065L1.66602 5.83398"
+                    stroke="#99A1AF"
+                    strokeWidth="1.66667"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <path
-                    d="M19 5L10 11L1 5"
-                    stroke="#9CA3AF"
-                    strokeWidth="2"
+                    d="M16.666 3.33398H3.33268C2.41221 3.33398 1.66602 4.08018 1.66602 5.00065V15.0007C1.66602 15.9211 2.41221 16.6673 3.33268 16.6673H16.666C17.5865 16.6673 18.3327 15.9211 18.3327 15.0007V5.00065C18.3327 4.08018 17.5865 3.33398 16.666 3.33398Z"
+                    stroke="#99A1AF"
+                    strokeWidth="1.66667"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
                 <input
+                  id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="you@example.com"
-                  className="w-full pl-11 pr-4 py-[11px] border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent text-[#333] placeholder:text-[#9CA3AF]"
+                  className="w-full h-[51px] pl-11 pr-4 font-inter text-base border-[1.6px] border-[#E5E7EB] rounded-[10px] placeholder:text-[rgba(10,10,10,0.5)] focus:outline-none focus:ring-2 focus:ring-fairsay-blue focus:border-transparent"
                   required
                 />
               </div>
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-[#333] text-sm font-medium mb-2">
+            {/* Password Input */}
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="font-inter font-semibold text-sm leading-5 text-[#333]"
+              >
                 Password
               </label>
               <div className="relative">
@@ -133,37 +144,43 @@ export default function SignIn() {
                   viewBox="0 0 20 20"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]"
+                  className="absolute left-3 top-[15px] pointer-events-none"
                 >
-                  <path
-                    d="M15.8333 9.16667H4.16667C3.24619 9.16667 2.5 9.91286 2.5 10.8333V16.6667C2.5 17.5871 3.24619 18.3333 4.16667 18.3333H15.8333C16.7538 18.3333 17.5 17.5871 17.5 16.6667V10.8333C17.5 9.91286 16.7538 9.16667 15.8333 9.16667Z"
-                    stroke="#9CA3AF"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M5.83333 9.16667V5.83333C5.83333 4.72826 6.27232 3.66846 7.05372 2.88706C7.83512 2.10565 8.89493 1.66667 10 1.66667C11.1051 1.66667 12.1649 2.10565 12.9463 2.88706C13.7277 3.66846 14.1667 4.72826 14.1667 5.83333V9.16667"
-                    stroke="#9CA3AF"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                  <g clipPath="url(#clip_lock_signin)">
+                    <path
+                      d="M15.8333 9.16602H4.16667C3.24619 9.16602 2.5 9.91221 2.5 10.8327V16.666C2.5 17.5865 3.24619 18.3327 4.16667 18.3327H15.8333C16.7538 18.3327 17.5 17.5865 17.5 16.666V10.8327C17.5 9.91221 16.7538 9.16602 15.8333 9.16602Z"
+                      stroke="#99A1AF"
+                      strokeWidth="1.66667"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M5.83398 9.16602V5.83268C5.83398 4.72761 6.27297 3.66781 7.05437 2.8864C7.83577 2.105 8.89558 1.66602 10.0007 1.66602C11.1057 1.66602 12.1655 2.105 12.9469 2.8864C13.7283 3.66781 14.1673 4.72761 14.1673 5.83268V9.16602"
+                      stroke="#99A1AF"
+                      strokeWidth="1.66667"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                  <defs>
+                    <clipPath id="clip_lock_signin">
+                      <rect width="20" height="20" fill="white" />
+                    </clipPath>
+                  </defs>
                 </svg>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  type={showPassword ? "text" : "password"}
                   value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  placeholder="Enter your password"
-                  className="w-full pl-11 pr-12 py-[11px] border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:border-transparent text-[#333] placeholder:text-[#9CA3AF]"
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Enter Password"
+                  className="w-full h-[51px] pl-11 pr-12 font-inter text-base border-[1.6px] border-[#E5E7EB] rounded-[10px] placeholder:text-[rgba(10,10,10,0.5)] focus:outline-none focus:ring-2 focus:ring-fairsay-blue focus:border-transparent"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#333]"
+                  className="absolute right-4 top-[15px] focus:outline-none"
                 >
                   <svg
                     width="20"
@@ -172,65 +189,41 @@ export default function SignIn() {
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    {showPassword ? (
-                      <>
-                        <path
-                          d="M14.95 14.95C13.5255 16.0358 11.7904 16.6374 10 16.6667C4.16667 16.6667 1.66667 10 1.66667 10C2.49595 8.35557 3.64607 6.89037 5.05 5.68333M8.25 3.53333C8.82379 3.39907 9.41073 3.33195 10 3.33333C15.8333 3.33333 18.3333 10 18.3333 10C17.9286 10.9463 17.4235 11.8473 16.8267 12.6867M11.7667 11.7667C11.5378 12.0123 11.2617 12.2093 10.9545 12.3459C10.6474 12.4826 10.3155 12.556 9.97884 12.562C9.64217 12.568 9.30781 12.5064 8.99596 12.3806C8.68412 12.2549 8.40125 12.0675 8.16394 11.8302C7.92663 11.5929 7.73925 11.31 7.61351 10.9982C7.48776 10.6863 7.42614 10.352 7.43213 10.0153C7.43812 9.67863 7.51159 9.34672 7.64822 9.03957C7.78486 8.73242 7.98183 8.45634 8.22733 8.22733"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M1.66699 1.66667L18.3337 18.3333"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <path
-                          d="M1.66699 10C1.66699 10 4.16699 3.33333 10.0003 3.33333C15.8337 3.33333 18.3337 10 18.3337 10C18.3337 10 15.8337 16.6667 10.0003 16.6667C4.16699 16.6667 1.66699 10 1.66699 10Z"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M10.0003 12.5C11.381 12.5 12.5003 11.3807 12.5003 10C12.5003 8.61929 11.381 7.5 10.0003 7.5C8.61961 7.5 7.50033 8.61929 7.50033 10C7.50033 11.3807 8.61961 12.5 10.0003 12.5Z"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </>
-                    )}
+                    <path
+                      d="M1.7181 10.2908C1.64865 10.1037 1.64865 9.89788 1.7181 9.71079C2.39452 8.07067 3.5427 6.66832 5.01708 5.68154C6.49146 4.69475 8.22564 4.16797 9.99977 4.16797C11.7739 4.16797 13.5081 4.69475 14.9825 5.68154C16.4568 6.66832 17.605 8.07067 18.2814 9.71079C18.3509 9.89788 18.3509 10.1037 18.2814 10.2908C17.605 11.9309 16.4568 13.3333 14.9825 14.32C13.5081 15.3068 11.7739 15.8336 9.99977 15.8336C8.22564 15.8336 6.49146 15.3068 5.01708 14.32C3.5427 13.3333 2.39452 11.9309 1.7181 10.2908Z"
+                      stroke="#99A1AF"
+                      strokeWidth="1.66667"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z"
+                      stroke="#99A1AF"
+                      strokeWidth="1.66667"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               </div>
             </div>
 
-            {/* Remember Me and Forgot Password */}
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-2">
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  id="remember"
                   checked={formData.rememberMe}
-                  onChange={(e) =>
-                    setFormData({ ...formData, rememberMe: e.target.checked })
-                  }
-                  className="w-4 h-4 text-[#1E3A8A] border-[#E5E7EB] rounded focus:ring-[#1E3A8A]"
+                  onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
+                  className="w-4 h-4 rounded border-[#E5E7EB] text-fairsay-blue focus:ring-fairsay-blue"
                 />
-                <label htmlFor="remember" className="text-sm text-[#4A5565]">
+                <span className="font-inter text-sm leading-5 text-[#4A5565]">
                   Remember me
-                </label>
-              </div>
+                </span>
+              </label>
               <Link
                 to="/forgot-password"
-                className="text-sm text-[#1E3A8A] hover:text-[#0F766E] font-medium"
+                className="font-inter font-semibold text-sm leading-5 text-fairsay-blue hover:underline"
               >
                 Forgot password?
               </Link>
@@ -239,12 +232,9 @@ export default function SignIn() {
             {/* Sign In Button */}
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[10px] font-semibold text-sm text-white mt-5"
-              style={{
-                background: 'linear-gradient(180deg, #1E3A8A 0%, #0F766E 100%)',
-              }}
+              className="w-full h-[51px] flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-fairsay-blue to-fairsay-teal font-inter font-semibold text-base leading-6 text-white hover:opacity-90 transition-opacity"
             >
-              Sign In
+              Sign in
               <svg
                 width="20"
                 height="20"
@@ -253,7 +243,7 @@ export default function SignIn() {
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M4.16699 10H15.8337"
+                  d="M4.16602 10H15.8327"
                   stroke="white"
                   strokeWidth="1.66667"
                   strokeLinecap="round"
@@ -268,18 +258,27 @@ export default function SignIn() {
                 />
               </svg>
             </button>
-
-            {/* Create Account Link */}
-            <div className="text-center pt-3.5">
-              <p className="text-sm text-[#9CA3AF] mb-2.5">Don't have an account?</p>
-              <Link
-                to="/sign-up"
-                className="block w-full py-3.5 rounded-[10px] border-2 border-[#1E3A8A] font-semibold text-sm text-[#1E3A8A] hover:bg-[#EFF6FF] transition-colors"
-              >
-                Create an Account
-              </Link>
-            </div>
           </form>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[#E5E7EB]" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="px-4 bg-white font-inter text-sm leading-5 text-[#6A7282]">
+                Don't have an account?
+              </span>
+            </div>
+          </div>
+
+          {/* Create Account Button */}
+          <Link
+            to="/sign-up"
+            className="w-full h-[51px] flex items-center justify-center rounded-[10px] border-[1.6px] border-fairsay-blue font-inter font-semibold text-base leading-6 text-fairsay-blue hover:bg-fairsay-blue/5 transition-colors"
+          >
+            Create an account
+          </Link>
 
           {/* 🛠️ QUICK LOGIN SECTION (DEV ONLY) */}
           {import.meta.env.DEV && (
@@ -314,32 +313,10 @@ export default function SignIn() {
 
         {/* Back to Home */}
         <Link
-          to="/dashboard"
-          className="text-sm text-[#4A5565] hover:text-[#1E3A8A] transition-colors inline-flex items-center gap-1"
+          to="/"
+          className="font-inter text-sm leading-5 text-white/80 text-center hover:text-white transition-colors"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12.6663 8H3.33301"
-              stroke="currentColor"
-              strokeWidth="1.33333"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M8 12.6673L3.33333 8.00065L8 3.33398"
-              stroke="currentColor"
-              strokeWidth="1.33333"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Back to Home
+          ← Back to Home
         </Link>
       </div>
     </div>
