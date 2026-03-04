@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { submitComplaint } from "../utils/logic-helpers";
 import { COMPLAINT_CATEGORIES } from "../utils/constants";
+import { submitAnonymousWhistleblower } from "../services/api";
 
 export default function Whistleblowing() {
   const navigate = useNavigate();
@@ -32,22 +32,36 @@ export default function Whistleblowing() {
       return;
     }
     
-    const combinedDescription = `Location: ${formData.location || 'Not specified'}\nDate: ${formData.dateOccurred || 'Not specified'}\nWitnesses: ${hasWitnesses ? 'Yes' : 'No'}\n\nDetails:\n${formData.description}`;
+    setIsSubmitting(true);
 
-    const result = await submitComplaint({
-      type: formData.violationType || 'OTHER',
-      title: formData.title,
-      description: combinedDescription,
-      isAnonymous: true
-    });
+    const isDemo = localStorage.getItem('fs_user') && JSON.parse(localStorage.getItem('fs_user'))?.id?.toString().startsWith('dev-');
+
+    if (isDemo) {
+      await new Promise(r => setTimeout(r, 1500));
+      setIsSubmitting(false);
+      navigate("/complaint-success", { state: { trackingId: `DEV-ANON-${Math.floor(Math.random() * 90000) + 10000}` } });
+      return;
+    }
+    const payload = new FormData();
+    payload.append('violationType', formData.violationType || 'OTHER');
+    payload.append('description', `Witnesses: ${hasWitnesses ? 'Yes' : 'No'}\n\n${formData.description}`);
+    payload.append('location', formData.location || '');
+    payload.append('dateOccurred', formData.dateOccurred || '');
+
+    if (formData.evidenceFiles && formData.evidenceFiles.length > 0) {
+      formData.evidenceFiles.forEach(file => {
+        payload.append('files', file);
+      });
+    }
+
+    const result = await submitAnonymousWhistleblower(payload);
 
     setIsSubmitting(false);
 
     if (result.success) {
-      //To pass the tracking ID to the success page so they can save it
       navigate("/complaint-success", { state: { trackingId: result.trackingId } });
     } else {
-      alert("Submission failed. Please try again or contact support.");
+      alert(result.message || "Submission failed. Please try again or contact support.");
     }
   };
 

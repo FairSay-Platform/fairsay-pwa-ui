@@ -4,8 +4,9 @@ import { fetchAllUsersAdmin, updateUserRoleAdmin, verifyUserAdmin, getInitials }
 import { useAppContext } from "../../context/AppContext";
 
 const roleStyles = {
-  admin: "text-purple-700",
-  moderator: "text-blue-600",
+  super_admin: "text-red-700 font-bold",
+  admin: "text-purple-700 font-semibold",
+  investigator: "text-blue-600 font-medium",
   user: "text-gray-600",
 };
 
@@ -44,7 +45,7 @@ export default function AdminUsers() {
   const handleVerifyUser = async (userId) => {
     const res = await verifyUserAdmin(userId);
     if (res.success) {
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isVerified: true } : u));
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isVerified: true, is_verified: true } : u));
       showAlert("User verified successfully!", "success");
     } else {
       showAlert("Failed to verify user.", "error");
@@ -96,6 +97,7 @@ export default function AdminUsers() {
                   const initial = getInitials({ firstName: u.first_name || u.firstName, lastName: u.last_name || u.lastName }).charAt(0) || "U";
                   const avatarBg = avatarColors[initial] ?? "bg-gray-400";
                   const currentRole = (u.role || "user").toLowerCase();
+                  const isVerified = u.isVerified || u.is_verified;
 
                   return (
                     <tr key={u.id} className="hover:bg-gray-50 transition-colors">
@@ -107,7 +109,7 @@ export default function AdminUsers() {
                           <div>
                             <div className="flex items-center gap-2">
                               <p className="font-semibold text-gray-900 text-sm">{fullName}</p>
-                              {u.isVerified && (
+                              {isVerified && (
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" title="Verified Employee">
                                   <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg>
@@ -126,19 +128,20 @@ export default function AdminUsers() {
                           className={`text-sm font-medium border-0 bg-transparent cursor-pointer focus:ring-0 ${roleStyles[currentRole] || roleStyles['user']} capitalize`}
                         >
                           <option className="text-gray-900" value="user">User</option>
-                          <option className="text-gray-900" value="moderator">Moderator</option>
+                          <option className="text-gray-900" value="moderator">Investigator</option>
                           <option className="text-gray-900" value="admin">Admin</option>
+                          <option className="text-gray-900" value="super_admin">Super Admin</option>
                         </select>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
-                        {u.isVerified ? (
+                        {isVerified ? (
                           <span className="text-green-600 text-sm font-medium">Active (Verified)</span>
                         ) : (
                           <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs font-semibold">Pending Verification</span>
                         )}
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
-                        {!u.isVerified && (
+                        {!isVerified && (
                           <button 
                             onClick={() => handleVerifyUser(u.id)}
                             className="text-xs font-semibold px-3 py-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors border border-green-200"

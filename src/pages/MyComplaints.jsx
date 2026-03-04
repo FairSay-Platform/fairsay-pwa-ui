@@ -36,14 +36,14 @@ export default function MyComplaints() {
               status: styles.label,
               statusColor: styles.color,
               borderColor: styles.border,
-              category: c.complaint_type || "General",
+              category: c.violation_category || "General",
               categoryColor: "bg-gray-100 text-gray-700",
               
               // For fields the backend doesn't have yet:
               priority: "Standard Priority",
               priorityColor: "border border-gray-300 text-gray-600",
               assignedTo: "Review Team",
-              filed: c.created_at ? new Date(c.created_at).toLocaleDateString() : "Just now",
+              filed: c.created_at || c.submitted_at ? new Date(c.created_at || c.submitted_at).toLocaleDateString() : "Just now",
               updated: c.updated_at ? new Date(c.updated_at).toLocaleDateString() : "Just now",
             };
           });

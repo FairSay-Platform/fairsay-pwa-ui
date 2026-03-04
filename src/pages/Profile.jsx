@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getCourseProgress } from '../utils/logic-helpers';
+import { getCourseProgress, getProgress } from '../utils/logic-helpers';
 import { courses } from '../data/courses';
 import Navbar from '../components/Navbar';
-import { useAppContext } from '../context/AppContext'; // Imported Context!
+import { useAppContext } from '../context/AppContext'; 
 
 function InfoField({ icon, value, editing, name, onChange }) {
   return (
@@ -54,7 +54,7 @@ export default function Profile() {
     jobTitle: user?.jobTitle || "",
     department: user?.department || "",
     employeeId: user?.employeeId || "",
-    joinDate: user?.joinDate || "January 2024",
+    joinDate: user?.joinDate || "March 2026",
     bio: user?.bio || ""
   });
 
@@ -75,7 +75,7 @@ export default function Profile() {
         jobTitle: user.jobTitle || "",
         department: user.department || "",
         employeeId: user.employeeId || "",
-        joinDate: user.joinDate || "January 2024",
+        joinDate: user.joinDate || "March 2026",
         bio: user.bio || ""
       };
       setProfile(userData);
@@ -84,15 +84,20 @@ export default function Profile() {
   }, [user]);
 
   // Get learning progress from courseProgress utility
-  const courseProgress = getCourseProgress();
+  const allProgressData = getProgress();
+  
   const learningProgress = courses.map((course) => {
-    const progress = courseProgress[course.id] || {};
+   
+    const courseData = allProgressData[course.id] || {};
+   
+    const exactPercentage = getCourseProgress(course.id); 
+
     return {
       name: course.title,
-      percent: progress?.completed ? 100 : (progress?.unlocked ? 60 : 0),
-      completed: progress?.completed || false,
-      inProgress: progress?.unlocked && !progress?.completed,
-      locked: !progress?.unlocked
+      percent: exactPercentage,
+      completed: courseData?.completed || false,
+      inProgress: courseData?.unlocked && !courseData?.completed,
+      locked: !courseData?.unlocked
     };
   });
 
