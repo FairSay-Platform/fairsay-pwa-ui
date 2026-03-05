@@ -16,19 +16,39 @@ export default function SignIn() {
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAlert({ show: false, message: "", type: "error" });
-    const result = await login(formData.email, formData.password);
-    if (result.success) {
-      if (result.user?.course_completed) {
-        navigate("/dashboard");
+    setIsSubmitting(true);
+
+    try {
+      const result = await login(formData.email, formData.password);
+      
+      if (result.success) {
+        const userRole = result.user?.role;
+
+        //Admin redirect
+        if (userRole === 'admin' || userRole === 'super_admin' || userRole === 'investigator') {
+          navigate('/admin/dashboard');
+        } 
+        //Standard user redirect
+        else {
+          if (result.user?.course_completed) {
+            navigate("/dashboard");
+          } else {
+            navigate("/learning");
+          }
+        }
       } else {
-        navigate("/learning");
+        setAlert({ show: true, message: result.message || "Invalid credentials", type: "error" });
       }
-    } else {
-      setAlert({ show: true, message: result.message, type: "error" });
+    } catch (error) {
+      console.error("Login error:", error);
+      setAlert({ show: true, message: "Could not connect to the server.", type: "error" });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -232,31 +252,34 @@ export default function SignIn() {
             {/* Sign In Button */}
             <button
               type="submit"
-              className="w-full h-[51px] flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-fairsay-blue to-fairsay-teal font-inter font-semibold text-base leading-6 text-white hover:opacity-90 transition-opacity"
+              disabled={isSubmitting}
+              className="w-full h-[51px] flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-fairsay-blue to-fairsay-teal font-inter font-semibold text-base leading-6 text-white hover:opacity-90 transition-opacity disabled:opacity-70"
             >
-              Sign in
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M4.16602 10H15.8327"
-                  stroke="white"
-                  strokeWidth="1.66667"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M10 4.16602L15.8333 9.99935L10 15.8327"
-                  stroke="white"
-                  strokeWidth="1.66667"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {isSubmitting ? "Signing in..." : "Sign in"}
+              {!isSubmitting && (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4.16602 10H15.8327"
+                    stroke="white"
+                    strokeWidth="1.66667"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M10 4.16602L15.8333 9.99935L10 15.8327"
+                    stroke="white"
+                    strokeWidth="1.66667"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </button>
           </form>
 
@@ -280,7 +303,7 @@ export default function SignIn() {
             Create an account
           </Link>
 
-          {/* 🛠️ QUICK LOGIN SECTION (DEV ONLY) */}
+          {/* QUICK LOGIN SECTION (DEV ONLY) */}
           {import.meta.env.DEV && (
             <div className="mt-8 pt-6 border-t border-dashed border-gray-200">
               <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-3 text-center">🛠️ Developer Quick Login</p>

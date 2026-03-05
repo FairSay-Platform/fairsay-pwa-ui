@@ -81,7 +81,7 @@ export const AppProvider = ({ children }) => {
     setTimeout(() => setAlert(null), 4000);
   };
 
-  // Sign-up
+ // Sign-up
   const register = async (userData) => {
     try {
       const backendData = {
@@ -101,12 +101,16 @@ export const AppProvider = ({ children }) => {
           ...userBackendData,
           firstName: userBackendData.first_name,
           lastName: userBackendData.last_name,
-        isAdmin: ['super_admin', 'admin', 'investigator'].includes(userData.role) || userData.is_admin === true
-};
+          isAdmin: ['super_admin', 'admin', 'investigator'].includes(userData.role) || userData.is_admin === true
+        };
         setUser(normalizedUser);
 
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        showAlert(res.data.message, "success");
+        return { success: true, user: normalizedUser }; 
       }
+      
       showAlert(res.data.message, "success");
       return { success: true };
     } catch (err) {
@@ -126,11 +130,12 @@ export const AppProvider = ({ children }) => {
         ...userData, 
         firstName: userData.first_name,
         lastName: userData.last_name,
-      isAdmin: ['super_admin', 'admin', 'investigator'].includes(userData.role) || userData.is_admin === true
-};
+        isAdmin: ['super_admin', 'admin', 'investigator'].includes(userData.role) || userData.is_admin === true
+      };
+      
       localStorage.setItem('fs_token', token);
       setUser(normalizedUser);
-      return { success: true };
+      return { success: true, user: normalizedUser }; 
     } catch (err) {
       return { success: false, message: err.response?.data?.message || "Login failed"};
     }
