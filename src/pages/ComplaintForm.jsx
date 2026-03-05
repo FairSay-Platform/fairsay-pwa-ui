@@ -513,9 +513,9 @@ export default function ComplaintForm() {
             addNotification("Draft Saved Securely", "Your complaint draft has been encrypted and saved.", "success");
           } else {
             const payload = {
-              violation_category: formData.violationCategory,
-              title: formData.complaintTitle,
-              description: formData.detailedDescription,
+              violation_category: formData.violationCategory || null,
+              title: formData.complaintTitle || null,
+              description: formData.detailedDescription || null,
               is_anonymous: formData.keepConfidential || false
             };
             const res = await api.post('/complaints', payload);
@@ -531,10 +531,10 @@ export default function ComplaintForm() {
           await new Promise(r => setTimeout(r, 400));
         } else {
           const payload = {
-            date_of_incident: formData.dateOfIncident,
-            time_of_incident: formData.timeOfIncident,
-            location: formData.location,
-            is_ongoing: formData.isOngoing
+            date_of_incident: formData.dateOfIncident || null,
+            time_of_incident: formData.timeOfIncident || null,
+            location: formData.location || null,
+            is_ongoing: formData.isOngoing || null
           };
           await api.put(`/complaints/${draftId}/step-2`, payload); 
         }
@@ -548,11 +548,11 @@ export default function ComplaintForm() {
           const payload = {
             parties: [
               {
-              personsInvolved: formData.personsInvolved,
-              job_title: formData.jobTitle,
-              department: formData.department,
-              has_witnesses: formData.hasWitnesses,
-              witness_info: formData.witnessInfo
+              name: formData.personsInvolved || null,
+              job_title: formData.jobTitle || null,
+              department: formData.department || null,
+              has_witnesses: formData.hasWitnesses || null,
+              witness_info: formData.witnessInfo || null
             }
           ]
           };

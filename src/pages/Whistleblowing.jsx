@@ -34,15 +34,8 @@ export default function Whistleblowing() {
     
     setIsSubmitting(true);
 
-    const isDemo = localStorage.getItem('fs_user') && JSON.parse(localStorage.getItem('fs_user'))?.id?.toString().startsWith('dev-');
-
-    if (isDemo) {
-      await new Promise(r => setTimeout(r, 1500));
-      setIsSubmitting(false);
-      navigate("/complaint-success", { state: { trackingId: `DEV-ANON-${Math.floor(Math.random() * 90000) + 10000}` } });
-      return;
-    }
-    const payload = new FormData();
+   const payload = new FormData();
+    
     payload.append('violationType', formData.violationType || 'OTHER');
     payload.append('description', `Witnesses: ${hasWitnesses ? 'Yes' : 'No'}\n\n${formData.description}`);
     payload.append('location', formData.location || '');

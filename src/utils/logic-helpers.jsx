@@ -309,9 +309,7 @@ export const fetchComplaintDetails = async (trackingId) => {
 
 export const submitAnonymousWhistleblower = async (formDataPayload) => {
   try {
-    const res = await api.post('/complaints/whistleblower-submit', formDataPayload, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const res = await api.post('/complaints/whistleblower-submit', formDataPayload);
     return { success: true, trackingId: res.data.tracking_id };
   } catch (err) {
     console.error("Anonymous submission failed", err);
