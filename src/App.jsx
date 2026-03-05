@@ -122,6 +122,14 @@ function App() {
               </ProtectedRoutes>
             }
           />
+         <Route 
+  path="/feedback" 
+  element={
+    <ProtectedRoutes>
+      <ComplaintFeedback />
+    </ProtectedRoutes>
+  } 
+/>
 
           {/* Learning Hub */}
           <Route
@@ -160,9 +168,7 @@ function App() {
           />
           {/*Whistleblowing Route*/}
           <Route path="/whistleblowing" element={
-            <ProtectedRoutes>
               <Whistleblowing />
-            </ProtectedRoutes>
           } />
 
           {/* Admin Routes */}

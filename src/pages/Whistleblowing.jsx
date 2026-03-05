@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { COMPLAINT_CATEGORIES } from "../utils/constants";
-import { submitAnonymousWhistleblower } from "../services/api";
+import { submitAnonymousWhistleblower } from "../utils/logic-helpers";
 
 export default function Whistleblowing() {
   const navigate = useNavigate();
