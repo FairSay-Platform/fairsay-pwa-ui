@@ -286,46 +286,103 @@ export const getCourseProgress = (courseId) => {
   return 0;
 };
 
+//Added - whistleblower services
+export const fetchMyComplaints = async () => {
+  try {
+    const res = await api.get('/complaints/my-complaints');
+    return { success: true, data: res.data.complaints || [] };
+  } catch (err) {
+    console.error("Failed to fetch user complaints", err);
+    return { success: false, data: [] };
+  }
+};
+
+export const fetchComplaintDetails = async (trackingId) => {
+  try {
+    const res = await api.get(`/complaints/${trackingId}`);
+    return { success: true, data: res.data.complaint };
+  } catch (err) {
+    console.error("Failed to fetch complaint details", err);
+    return { success: false, message: "Could not load complaint details." };
+  }
+};
+
+export const submitAnonymousWhistleblower = async (formDataPayload) => {
+  try {
+    const res = await api.post('/complaints/whistleblower-submit', formDataPayload);
+    return { success: true, trackingId: res.data.tracking_id };
+  } catch (err) {
+    console.error("Anonymous submission failed", err);
+    return { success: false, message: err.response?.data?.message || "Submission failed" };
+  }
+};
+
 
 //Admin Services
 export const fetchAdminDashboardStats = async () => {
-  return { 
-    success: true, 
-    data: {
-      total_complaints: 142,
-      complaints_change: 12,
-      active_whistleblows: 28,
-      new_this_week: 5,
-      pending_count: 14,
-      high_priority_count: 3
-    } 
-  };
+  try {
+    const res = await api.get('/admin/dashboard');
+    return { success: true, data: res.data };
+  } catch (err) {
+    console.error("Failed to fetch admin stats", err);
+    return { success: false, data: null };
+  }
 };
 
 export const fetchAllComplaintsAdmin = async () => {
   try {
     const res = await api.get('/admin/complaints');
-    return { success: true, data: res.data.complaints || [] };
+    return { success: true, data: res.data.complaints || res.data || [] };
   } catch (err) {
     console.error("Failed to fetch admin complaints", err);
     return { success: true, data: [] };
   }
 };
 
-export const updateComplaintStatusAdmin = async (complaintId, status) => {
+export const getAssignedComplaints = async () => {
   try {
-    const res = await api.put(`/admin/complaints/${complaintId}/status`, { status });
-    return { success: true, message: "Status updated successfully." };
+    const res = await api.get('/admin/complaints/assigned');
+    return { success: true, data: res.data.complaints || res.data || [] };
+  } catch (err) {
+    console.error("Failed to fetch assigned complaints", err);
+    return { success: false, data: [] };
+  }
+};
+
+export const updateComplaintStatusAdmin = async (complaintId, newStatus) => {
+  try {
+    const res = await api.patch(`/admin/complaints/${complaintId}/status`, { newStatus });
+    return { success: true, message: res.data.message || "Status updated successfully." };
   } catch (err) {
     console.error("Failed to update complaint status", err);
-    return { success: false, message: "Failed to update status." };
+    return { success: false, message: err.response?.data?.message || "Failed to update status." };
+  }
+};
+
+export const assignComplaintAdmin = async (complaintId, assignedToId) => {
+  try {
+    const res = await api.patch(`/admin/complaints/${complaintId}/assign`, { assignedTo: assignedToId });
+    return { success: true, message: res.data.message };
+  } catch (err) {
+    console.error("Failed to assign complaint", err);
+    return { success: false, message: err.response?.data?.message || "Failed to assign complaint." };
+  }
+};
+
+export const submitInvestigationReport = async (complaintId, reportText) => {
+  try {
+    const res = await api.post(`/admin/complaints/${complaintId}/report`, { report: reportText });
+    return { success: true, message: res.data.message };
+  } catch (err) {
+    console.error("Failed to submit report", err);
+    return { success: false, message: err.response?.data?.message || "Failed to submit report." };
   }
 };
 
 export const fetchAllUsersAdmin = async () => {
   try {
     const res = await api.get('/admin/users');
-    return { success: true, data: res.data.users || [] };
+    return { success: true, data: res.data.users || res.data || [] };
   } catch (err) {
     console.error("Failed to fetch users", err);
     return { success: true, data: [] }; 
@@ -333,15 +390,21 @@ export const fetchAllUsersAdmin = async () => {
 };
 
 export const updateUserRoleAdmin = async (userId, newRole) => {
-  return { success: true, message: "User role updated" };
+  try {
+    const res = await api.patch(`/admin/users/${userId}/role`, { role: newRole });
+    return { success: true, message: res.data?.message || "User role updated" };
+  } catch (err) {
+    console.error("Failed to update user role", err);
+    return { success: false, message: err.response?.data?.message || "Failed to update role." };
+  }
 };
 
 export const verifyUserAdmin = async (userId) => {
   try {
-    const res = await api.put(`/admin/users/${userId}/verify`);
-    return { success: true, message: "User verified successfully." };
+    const res = await api.patch(`/admin/users/${userId}/verify`);
+    return { success: true, message: res.data?.message || "User verified successfully." };
   } catch (err) {
     console.error("Failed to verify user", err);
-    return { success: false, message: "Failed to verify user." };
+    return { success: false, message: err.response?.data?.message || "Failed to verify user." };
   }
 };

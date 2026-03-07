@@ -513,10 +513,10 @@ export default function ComplaintForm() {
             addNotification("Draft Saved Securely", "Your complaint draft has been encrypted and saved.", "success");
           } else {
             const payload = {
-              complaint_type: formData.violationCategory,
-              title: formData.complaintTitle,
-              description: formData.detailedDescription,
-              is_anonymous: formData.keepConfidential
+              violation_category: formData.violationCategory || null,
+              title: formData.complaintTitle || null,
+              description: formData.detailedDescription || null,
+              is_anonymous: formData.keepConfidential || false
             };
             const res = await api.post('/complaints', payload);
             setDraftId(res.data.complaintId);
@@ -531,10 +531,10 @@ export default function ComplaintForm() {
           await new Promise(r => setTimeout(r, 400));
         } else {
           const payload = {
-            dateOfIncident: formData.dateOfIncident,
-            timeOfIncident: formData.timeOfIncident,
-            location: formData.location,
-            isOngoing: formData.isOngoing
+            date_of_incident: formData.dateOfIncident || null,
+            time_of_incident: formData.timeOfIncident || null,
+            location: formData.location || null,
+            is_ongoing: formData.isOngoing || null
           };
           await api.put(`/complaints/${draftId}/step-2`, payload); 
         }
@@ -546,13 +546,15 @@ export default function ComplaintForm() {
           await new Promise(r => setTimeout(r, 400));
         } else {
           const payload = {
-            parties: {
-              personsInvolved: formData.personsInvolved,
-              jobTitle: formData.jobTitle,
-              department: formData.department,
-              hasWitnesses: formData.hasWitnesses,
-              witnessInfo: formData.witnessInfo
+            parties: [
+              {
+              name: formData.personsInvolved || null,
+              job_title: formData.jobTitle || null,
+              department: formData.department || null,
+              has_witnesses: formData.hasWitnesses || null,
+              witness_info: formData.witnessInfo || null
             }
+          ]
           };
           await api.post(`/complaints/${draftId}/parties`, payload);
         }

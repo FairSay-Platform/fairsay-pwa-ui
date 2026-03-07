@@ -136,11 +136,16 @@ const activities = [
 
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadStats = async () => {
+      setLoading(true);
       const res = await fetchAdminDashboardStats();
-      if (res.success) setData(res.data);
+      if (res.success && res.data) { setData(res.data.stats || res.data); 
+
+      }
+      setLoading(false);
     };
     loadStats();
   }, []);
@@ -148,7 +153,7 @@ export default function AdminDashboard() {
   const dynamicStats = [
     {
       label: "Total Complaints",
-      value: data?.total_complaints || "0",
+      value: data?.total || "0",
       change: `+${data?.complaints_change || 0}% from last month`,
       changeUp: true,
       icon: (
@@ -172,7 +177,7 @@ export default function AdminDashboard() {
     },
     {
       label: "Pending Review",
-      value: data?.pending_count || "0",
+      value: data?.under_review || "0",
       subLabel: `High Priority: ${data?.high_priority_count || 0}`,
       highPriority: true,
       icon: (
