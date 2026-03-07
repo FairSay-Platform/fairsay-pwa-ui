@@ -41,7 +41,7 @@ function App() {
           <Route path={APP_STEPS.SIGN_UP} element={<SignUp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/check-email" element={<CheckEmail />} />
-          <Route path={APP_STEPS.VERIFY_EMAIL} element={<VerifyEmailNotice />} />
+          <Route path={APP_STEPS.VERIFY_NOTICE} element={<VerifyEmailNotice />} />
 
           {/* Onboarding & Verification */}
           <Route

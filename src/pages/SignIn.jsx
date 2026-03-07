@@ -292,6 +292,18 @@ export default function SignIn() {
             Create an account
           </Link>
 
+<div className="mt-4 text-center">
+  <p className="font-inter text-sm text-gray-500">
+    Didn't get a verification email?{" "}
+    <Link 
+      to={APP_STEPS.VERIFY_NOTICE} 
+      className="text-fairsay-blue font-semibold hover:underline"
+    >
+      Resend link
+    </Link>
+  </p>
+</div>
+
           {/* QUICK LOGIN SECTION (DEV ONLY) */}
           {import.meta.env.DEV && (
             <div className="mt-8 pt-6 border-t border-dashed border-gray-200">
