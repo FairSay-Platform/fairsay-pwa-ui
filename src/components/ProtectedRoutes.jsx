@@ -23,12 +23,21 @@ const isDevAdmin =
     return <Navigate to={APP_STEPS.SIGN_IN} state={{ from: location }} replace />;
   }
 
-  //Super Admin / Dev Bypass
-  if (user.role === 'super_admin' || user.id?.toString().startsWith('dev-')) return children;
+  //Role-Based Access Control (RBAC) with development bypass
+  const hasElevatedAccess = 
+        user.role === 'super_admin' || 
+        user.role === 'admin' ||    
+        user.isAdmin === true ||     
+        user.id?.toString().startsWith('dev-') ||
+        isDevAdmin;
 
-  //Admin Guard
-  if (requireAdmin && !user.isAdmin) {
-    return <Navigate to={APP_STEPS.DASHBOARD} replace />;
+    if (hasElevatedAccess) {
+        return children;
+    }
+
+    //Admin Guard (For non-admin users trying to sneak into /admin)
+    if (requireAdmin && !hasElevatedAccess) {
+        return <Navigate to={APP_STEPS.DASHBOARD} replace />;
   }
 
   //Profile Completion
