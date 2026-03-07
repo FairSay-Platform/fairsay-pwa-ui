@@ -128,7 +128,7 @@ export default function AdminUsers() {
                           className={`text-sm font-medium border-0 bg-transparent cursor-pointer focus:ring-0 ${roleStyles[currentRole] || roleStyles['user']} capitalize`}
                         >
                           <option className="text-gray-900" value="user">User</option>
-                          <option className="text-gray-900" value="moderator">Investigator</option>
+                          <option className="text-gray-900" value="investigator">Investigator</option>
                           <option className="text-gray-900" value="admin">Admin</option>
                           <option className="text-gray-900" value="super_admin">Super Admin</option>
                         </select>
@@ -141,13 +141,27 @@ export default function AdminUsers() {
                         )}
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
-                        {!isVerified && (
-                          <button 
-                            onClick={() => handleVerifyUser(u.id)}
-                            className="text-xs font-semibold px-3 py-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors border border-green-200"
-                          >
-                            Verify
-                          </button>
+                       {!isVerified && (
+                          <div className="flex items-center gap-2">
+                            {/* NEW: View Document Button (If the backend sends the URL) */}
+                            {(u.proofUrl || u.proof_url) && (
+                              <a 
+                                href={u.proofUrl || u.proof_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs font-semibold px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition-colors border border-blue-200"
+                              >
+                                View ID
+                              </a>
+                            )}
+                            
+                            <button 
+                              onClick={() => handleVerifyUser(u.id)}
+                              className="text-xs font-semibold px-3 py-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors border border-green-200"
+                            >
+                              Approve
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

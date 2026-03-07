@@ -189,8 +189,17 @@ function AccountTab({ editing, onEdit, onCancel, onSave, isSaving, user }) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
               </svg>
-              <input name="email" value={editData.email} onChange={handleChange} readOnly={!editing} className="flex-1 text-sm text-gray-800 dark:text-dark-text-primary font-inter outline-none bg-transparent" />
+            <input 
+                name="email" 
+                value={editData.email} 
+                onChange={handleChange} 
+                readOnly={true} 
+                className={`flex-1 text-sm font-inter outline-none bg-transparent ${editing ? 'text-gray-500 cursor-not-allowed' : 'text-gray-800 dark:text-dark-text-primary'}`} 
+              />
             </div>
+            {editing && (
+              <p className="text-[11px] text-gray-400 mt-1.5 font-inter">Email cannot be changed. Contact IT support to update your primary address.</p>
+            )}
           </div>
 
           <div>
@@ -565,9 +574,17 @@ export default function ProfileSettings() {
   const [editing, setEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSaveAccount = async (updatedData) => {
+ const handleSaveAccount = async (updatedData) => {
     setIsSaving(true);
-    const success = await updateUser(updatedData);
+    
+    const payload = {
+      first_name: updatedData.firstName,
+      last_name: updatedData.lastName,
+      phone_number: updatedData.phone
+    };
+
+    const success = await updateUser(payload);
+    
     if (success) {
       setEditing(false);
     }

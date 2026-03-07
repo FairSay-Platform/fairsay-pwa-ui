@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import StepIndicator from "../components/StepIndicator";
 import { useAppContext } from "../context/AppContext";
+import api from "../services/api";
 
 const BG_IMAGE =
   "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
 
 export default function EmployeeVerification() {
   const navigate = useNavigate();
-  const { updateUser } = useAppContext();
+  const { setUser, showAlert } = useAppContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -33,18 +34,34 @@ export default function EmployeeVerification() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 1. Guard against empty files
+    if (!uploadedFile) {
+      showAlert("Please upload your proof of employment document.", "error");
+      return;
+    }
+
     setIsSubmitting(true);
-    console.log("Verification data:", formData, uploadedFile);
 
-    const success = await updateUser({
-      declaration: formData.selfDeclaration,
-      verification_status: 'pending'
-    });
+    try {
+      const payload = new FormData();
+    
+      payload.append("file", uploadedFile); 
+      payload.append("declaration", formData.selfDeclaration);
+      payload.append("consentData", formData.consentData);
+      payload.append("consentPrivacy", formData.privacyAgreement);
 
-    setIsSubmitting(false);
+      const res = await api.post('/verification/submit', payload);
 
-    if (success) {
+      setUser(prev => ({ ...prev, verification_status: 'pending' }));
+
       navigate("/account-success");
+
+    } catch (err) {
+      console.error("Verification failed:", err);
+      showAlert(err.response?.data?.message || "Failed to submit verification.", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
