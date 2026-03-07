@@ -36,7 +36,7 @@ export default function CompleteProfile() {
       job_title: formData.jobTitle,
       department: formData.department,
       company_name: formData.companyName,
-      phone_number: formData.phoneNumber,
+      phone: formData.phoneNumber,
       location: formData.location,
       profile_completed: true 
     };
