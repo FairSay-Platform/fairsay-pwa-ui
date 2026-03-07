@@ -242,7 +242,7 @@ function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
 
   if (!isOpen || !complaint) return null;
 
-  const handleSubmit = async () => {
+  const handleReportSubmit = async () => {
     if (!reportText.trim()) {
       showAlert("Report cannot be empty", "error");
       return;
@@ -302,7 +302,8 @@ function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
             Cancel
           </button>
           <button 
-            onClick={handleSubmit}
+            type="button"
+            onClick={handleReportSubmit}
             disabled={isSubmitting}
             className="px-5 py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-70 flex items-center gap-2"
           >
