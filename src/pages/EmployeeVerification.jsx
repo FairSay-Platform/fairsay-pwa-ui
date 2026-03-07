@@ -5,6 +5,7 @@ import StepIndicator from "../components/StepIndicator";
 import { useAppContext } from "../context/AppContext";
 import api from "../services/api";
 import { APP_STEPS, USER_STATUS } from "../utils/constants";
+import { validateFileUpload } from "../utils/logic-helpers";
 
 const BG_IMAGE =
   "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
@@ -28,15 +29,22 @@ export default function EmployeeVerification() {
   ];
 
   const handleFileUpload = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setUploadedFile(e.target.files[0]);
+    const file = e.target.files[0];
+    const { isValid, error } = validateFileUpload(file);
+
+    if (!isValid) {
+      showAlert(error, "error");
+      e.target.value = "";
+      setUploadedFile(null);
+      return;
     }
+
+    setUploadedFile(file);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 1. Guard against empty files
     if (!uploadedFile) {
       showAlert("Please upload your proof of employment document.", "error");
       return;
@@ -46,11 +54,14 @@ export default function EmployeeVerification() {
 
     try {
       const payload = new FormData();
-    
-      payload.append("file", uploadedFile); 
       payload.append("declaration", formData.selfDeclaration);
-      payload.append("consentData", formData.consentData);
-      payload.append("consentPrivacy", formData.privacyAgreement);
+      payload.append("consentData", String(formData.consentData));
+      payload.append("consentPrivacy", String(formData.privacyAgreement));
+      payload.append("file", uploadedFile); 
+
+      for (let [key, value] of payload.entries()) {
+  console.log(`${key}:`, value);
+}
 
       const res = await api.post('/verification/submit', payload);
 

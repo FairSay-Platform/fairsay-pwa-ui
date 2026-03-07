@@ -3,7 +3,7 @@ import book from '../images/Book.svg';
 import report from '../images/Report.svg';
 import chatbubble from '../images/Chatbubble.svg';
 import danger from '../images/Danger.svg';
-import { COMPLAINT_STATUS_STYLES } from './constants';
+import { COMPLAINT_STATUS_STYLES, FILE_UPLOAD_RULES } from './constants';
 
 
 
@@ -40,12 +40,14 @@ export const getStatusProgress = (status) => {
   };
 
   return {
-    color: style?.hex || '#CBD5E1', // Add a hex property to your constants!
+    color: style?.hex || '#CBD5E1', 
     percent: progressMap[status] || 0,
     label: style?.label || status
   };
 };
 
+
+//Added - Initials generator
 export const getInitials = (user) => {
   if (!user) return "";
   if (typeof user === 'string') {
@@ -57,6 +59,28 @@ export const getInitials = (user) => {
   const first = (user.firstName)?.[0] || "";
   const last = (user.lastName)?.[0] || "";
   return (first + last).toUpperCase();
+};
+
+//Added - File upload validation
+export const validateFileUpload = (file) => {
+  if (!file) return { isValid: false, error: 'No file selected' };
+
+  if (!FILE_UPLOAD_RULES.allowedTypes.includes(file.type)) {
+    return { 
+      isValid: false, 
+      error: 'Unsupported format. Please upload a PDF, PNG, or JPEG.' 
+    };
+  }
+
+  if (file.size > FILE_UPLOAD_RULES.maxSize) {
+    const sizeInMB = FILE_UPLOAD_RULES.maxSize / (1024 * 1024);
+    return { 
+      isValid: false, 
+      error: `File size exceeds ${sizeInMB}MB limit. Please compress your document.` 
+    };
+  }
+
+  return { isValid: true, error: null };
 };
 
 export const getActivityIcon = (action = "") => {

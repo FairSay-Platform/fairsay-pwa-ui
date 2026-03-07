@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { COMPLAINT_CATEGORIES, COMPLAINT_STEPS, IMPACT_TYPES, INITIAL_COMPLAINT_FORM_DATA } from "../utils/constants";
 import api from '../services/api';
-import { useAppContext } from "../context/AppContext"; // <-- Imported context!
+import { useAppContext } from "../context/AppContext"; 
 
 function StepIndicator({ currentStep }) {
   return (
