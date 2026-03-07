@@ -41,9 +41,9 @@ function ProgressBar({ percent, completed }) {
 }
 
 export default function Profile() {
-  const { user, updateUser } = useAppContext(); // Grab real user data
+  const { user, updateUser } = useAppContext();
   
-  // Map real user data, with fallbacks for missing fields
+  //To map real user data, with fallbacks for missing fields
   const [profile, setProfile] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
@@ -83,7 +83,7 @@ export default function Profile() {
     }
   }, [user]);
 
-  // Get learning progress from courseProgress utility
+  //To get learning progress from courseProgress utility
   const allProgressData = getProgress();
   
   const learningProgress = courses.map((course) => {
@@ -115,12 +115,26 @@ export default function Profile() {
 
   async function handleSave() {
     setIsSaving(true);
-    // Call the backend update function from AppContext
-    const success = await updateUser(editData);
+    
+    const payload = {
+      first_name: editData.firstName,
+      last_name: editData.lastName,
+      phone_number: editData.phone,
+      location: editData.location,
+      company_name: editData.company,
+      job_title: editData.jobTitle,
+      department: editData.department,
+      employee_id: editData.employeeId,
+      bio: editData.bio
+    };
+
+    const success = await updateUser(payload);
+    
     if (success) {
       setProfile(editData);
       setEditing(false);
     }
+    
     setIsSaving(false);
   }
 
@@ -321,11 +335,14 @@ export default function Profile() {
                   <label className="block text-xs text-gray-500 dark:text-dark-text-tertiary mb-2 font-inter">Email</label>
                   <InfoField
                     icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>}
-                    value={editing ? editData.email : profile.email}
-                    editing={editing}
+                    value={profile.email}
+                    editing={false}
                     name="email"
                     onChange={handleChange}
                   />
+                  {editing && (
+                    <p className="text-[10px] text-gray-400 mt-1">Email address cannot be changed. Contact support for assistance.</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 dark:text-dark-text-tertiary mb-2 font-inter">Phone</label>

@@ -2,12 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import StepIndicator from "../components/StepIndicator";
+import { useAppContext } from "../context/AppContext";
 
 const BG_IMAGE =
   "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
 
 export default function CompleteProfile() {
   const navigate = useNavigate();
+  const { updateUser } = useAppContext();
+  const [isSubmitting, setIsSubmitting] = useState(false); 
+  
+
   const [formData, setFormData] = useState({
     jobTitle: "",
     department: "",
@@ -22,10 +27,27 @@ export default function CompleteProfile() {
     { number: 3, label: "Verification", status: "upcoming" },
   ];
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Profile data:", formData);
-    navigate("/employee-verification");
+    setIsSubmitting(true);
+
+    const payload = {
+      job_title: formData.jobTitle,
+      department: formData.department,
+      company_name: formData.companyName,
+      phone_number: formData.phoneNumber,
+      location: formData.location,
+      profile_completed: true 
+    };
+
+    const success = await updateUser(payload);
+
+    setIsSubmitting(false);
+
+    if (success) {
+      navigate("/employee-verification");
+    }
   };
 
   return (
@@ -179,31 +201,34 @@ export default function CompleteProfile() {
               </button>
               <button
                 type="submit"
-                className="flex-1 h-[51px] flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-fairsay-blue to-fairsay-teal font-inter font-semibold text-base leading-6 text-white hover:opacity-90 transition-opacity"
+                disabled={isSubmitting}
+                className="flex-1 h-[51px] flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-fairsay-blue to-fairsay-teal font-inter font-semibold text-base leading-6 text-white hover:opacity-90 transition-opacity disabled:opacity-70"
               >
-                Continue
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4.16602 10H15.8327"
-                    stroke="white"
-                    strokeWidth="1.66667"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M10 4.16602L15.8333 9.99935L10 15.8327"
-                    stroke="white"
-                    strokeWidth="1.66667"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                {isSubmitting ? "Saving..." : "Continue"}
+                {!isSubmitting && (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4.16602 10H15.8327"
+                      stroke="white"
+                      strokeWidth="1.66667"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M10 4.16602L15.8333 9.99935L10 15.8327"
+                      stroke="white"
+                      strokeWidth="1.66667"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
               </button>
             </div>
           </form>

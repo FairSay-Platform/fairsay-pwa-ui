@@ -33,7 +33,7 @@ function avatarColor(name) {
 }
 
 export default function AdminComplaints() {
-  const { showAlert } = useAppContext();
+  const { showAlert, user } = useAppContext();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -173,7 +173,7 @@ export default function AdminComplaints() {
                           <select
                             value={status}
                             onChange={(e) => handleStatusChange(compId, e.target.value)}
-                            disabled={validNextSteps.length === 0}
+                            disabled={validNextSteps.length === 0 || user?.role !== 'super_admin'} 
                             className={`text-xs font-semibold px-2.5 py-1.5 rounded-full border-0 outline-none cursor-pointer focus:ring-2 focus:ring-[#1E3A8A] ${statusStyles[status] || statusStyles['submitted']} ${validNextSteps.length === 0 ? 'opacity-70 cursor-not-allowed' : ''}`}
                           >
                             <option value={status}>{formatStatus(status)}</option>
@@ -184,7 +184,7 @@ export default function AdminComplaints() {
                             ))}
                           </select>
                           
-                          {/* NEW: Show the "Add Report" button if case is under investigation */}
+                          
                           {status === 'investigation' && (
                             <button 
                               onClick={() => setSelectedCase(c)}
@@ -206,14 +206,14 @@ export default function AdminComplaints() {
         </div>
       </div>
 
-      {/* NEW: Render the modal outside the regular flow */}
+      {/* Report Modal */}
       <ReportModal 
         complaint={selectedCase} 
         isOpen={!!selectedCase} 
         onClose={() => setSelectedCase(null)} 
         onSuccess={() => {
           setSelectedCase(null);
-          loadComplaints(); // Refresh the table after submission!
+          loadComplaints(); 
         }}
         showAlert={showAlert}
       />
@@ -222,7 +222,7 @@ export default function AdminComplaints() {
   );
 }
 
-// NOTE: Moved entirely outside the main component!
+
 function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
   const [reportText, setReportText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

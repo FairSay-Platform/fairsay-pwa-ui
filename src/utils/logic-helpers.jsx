@@ -401,7 +401,7 @@ export const updateUserRoleAdmin = async (userId, newRole) => {
 
 export const verifyUserAdmin = async (userId) => {
   try {
-    const res = await api.patch(`/admin/users/${userId}/verify`);
+    const res = await api.put(`verification/admin/verify-user/${userId}/approve`);
     return { success: true, message: res.data?.message || "User verified successfully." };
   } catch (err) {
     console.error("Failed to verify user", err);
