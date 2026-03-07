@@ -93,6 +93,7 @@ export const AppProvider = ({ children }) => {
 
       const res = await api.post('/auth/register', backendData);
       const { token, user: userBackendData } = res.data;
+      console.log("Registration response:", res.data);
 
       if (token) {
         localStorage.setItem('fs_token', token);
