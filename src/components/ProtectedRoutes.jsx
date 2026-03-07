@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
-import { APP_STEPS } from "../utils/constants";
+import { APP_STEPS, USER_STATUS } from "../utils/constants";
 
 const ProtectedRoutes = ({ children, step, requireAdmin = false }) => {
     const { user, loading } = useAppContext();
@@ -18,34 +18,35 @@ const isDevAdmin =
         </div>
     ); 
 
-    //Dev-Admin bypass 
-    if (isDevAdmin) return children;
-
-    //For the whistleblower bypass
-    if (user?.isWhistleblower) return children;
-
-  //To check verification
-  if (step === APP_STEPS.PROFILE_COMPLETION && !user.isVerified) {
-    return <Navigate to="/account-success" replace />;
+   //Auth Guard
+  if (!user) {
+    return <Navigate to={APP_STEPS.SIGN_IN} state={{ from: location }} replace />;
   }
 
-  
-    //To check if the route requires admin privileges. 
+  //Super Admin / Dev Bypass
+  if (user.role === 'super_admin' || user.id?.toString().startsWith('dev-')) return children;
 
-    if (requireAdmin && !user.isAdmin) {
-        return <Navigate to="/dashboard" replace />;
-    }
+  //Admin Guard
+  if (requireAdmin && !user.isAdmin) {
+    return <Navigate to={APP_STEPS.DASHBOARD} replace />;
+  }
 
-    // To check verification
-    if (step === APP_STEPS.PROFILE_COMPLETION && !user.isVerified) {
-         return <Navigate to="/account-success" replace />;
-    }
+  //Profile Completion
+  if (!user.profile_completed && location.pathname !== APP_STEPS.PROFILE_COMPLETION) {
+    return <Navigate to={APP_STEPS.PROFILE_COMPLETION} replace />;
+  }
 
-   
-    if (step === APP_STEPS.EDUCATION && !user.hasCompletedEducation) { 
-        return <Navigate to="/learning" replace />;
-    }
+  //For employee verification (only if profile is done)
+  const hasNotSubmittedID = !user.verification_status;
+  if (user.profile_completed && hasNotSubmittedID && location.pathname !== APP_STEPS.EMPLOYEE_VERIFICATION) {
+    return <Navigate to={APP_STEPS.EMPLOYEE_VERIFICATION} replace />;
+  }
 
+  //To prevent backtracking
+  const isSetupPage = [APP_STEPS.PROFILE_COMPLETION, APP_STEPS.EMPLOYEE_VERIFICATION].includes(location.pathname);
+  if (user.profile_completed && user.verification_status && isSetupPage) {
+    return <Navigate to={APP_STEPS.DASHBOARD} replace />;
+  }
     return children;
 }
 

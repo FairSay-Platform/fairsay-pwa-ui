@@ -2,6 +2,7 @@ import Logo from '../components/Logo';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { APP_STEPS } from '../utils/constants';
 
 const BG_IMAGE =
   "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
@@ -23,24 +24,12 @@ export default function SignIn() {
     setAlert({ show: false, message: "", type: "error" });
     setIsSubmitting(true);
 
-    try {
       const result = await login(formData.email, formData.password);
       
-      if (result.success) {
-        const userRole = result.user?.role;
+      try {
 
-        //Admin redirect
-        if (userRole === 'admin' || userRole === 'super_admin' || userRole === 'investigator') {
-          navigate('/admin/dashboard');
-        } 
-        //Standard user redirect
-        else {
-          if (result.user?.course_completed) {
-            navigate("/dashboard");
-          } else {
-            navigate("/learning");
-          }
-        }
+      if (result.success) {
+        navigate(result.redirectTo || APP_STEPS.DASHBOARD);
       } else {
         setAlert({ show: true, message: result.message || "Invalid credentials", type: "error" });
       }
@@ -57,11 +46,11 @@ export default function SignIn() {
     const res = devLogin(persona);
     if (res.success) {
       if (persona === 'admin') {
-        navigate('/admin/dashboard');
+        navigate(APP_STEPS.ADMIN_DASHBOARD);
       } else if (persona === 'whistleblower') {
         navigate('/whistleblowing');
       } else {
-        navigate('/dashboard');
+        navigate(APP_STEPS.DASHBOARD);
       }
     } 
   }

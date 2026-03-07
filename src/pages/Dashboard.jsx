@@ -73,6 +73,14 @@ import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/l
     }
   }, [user]);
 
+  //To guardt the dashboard route and ensure profile completion
+  useEffect(() => {
+  if (user && !user.profile_completed && !user.isAdmin) {
+    navigate("/complete-profile");
+  }
+}, [user, navigate]);
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
      
@@ -114,6 +122,16 @@ import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/l
           </Link>
         </div>
         )}
+
+       {user?.verification_status === 'rejected' && (
+  <div className="mb-8 rounded-lg border-l-4 border-red-600 bg-red-50 p-4 flex items-start justify-between flex-col md:flex-row gap-4">
+    <div className="flex items-start gap-3">
+       <div className="text-red-600 font-bold text-sm">Action Required: Verification Rejected</div>
+       <p className="text-sm text-red-800">Your proof was rejected. Please check your email for details and re-submit.</p>
+    </div>
+    <Link to="/employee-verification" className="text-sm text-red-700 font-bold underline">Re-submit Proof</Link>
+  </div>
+)} 
 
         {/* Welcome Section */}
         <div className="mb-8">
@@ -170,7 +188,7 @@ import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/l
                 <ActionCard 
                 icon={book}
                 title="Continue Learning" desc="Resume your rights education modules" btnText="Go to Education hub" color="bg-[#0D7A6F]" onClick={() => navigate('/learning')} />
-                <ActionCard icon={report} title="File New Complaint" desc="Report a workplace rights violation" btnText="Start Complaint" color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" locked={!progressStats.completionPercentage} onClick={() => navigate('/file-complaint')} />
+                <ActionCard icon={report} title="File New Complaint" desc="Report a workplace rights violation" btnText="Start Complaint" color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" locked={ !user?.isVerified || progressStats.completionPercentage < 100 } onClick={() => navigate('/file-complaint')} />
                 <ActionCard icon={chatbubble} title="Ask AI Assistant" desc="Get instant guidance on your rights" btnText="Start Chat" color="bg-[#2D4495]"  onClick={() => navigate('/ai-assistant')} />
               </div>
             </section>

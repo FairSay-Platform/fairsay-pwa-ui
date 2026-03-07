@@ -156,10 +156,24 @@ export const PROFILE_PRIVACY_OPTIONS = [
 //Added - app steps, simulating the different stages of the user journey within the app. This allows for better tracking of user progress and helps guide users through the various features and educational content in a structured way.
 
 export const APP_STEPS = {
-    REGISTRATION: 'isRegistered',
-  EMAIL_VERIFICATION: 'emailVerified',
-  PROFILE_COMPLETION: 'isVerified',
-  EDUCATION: 'educated',
+  SIGN_IN: '/sign-in',
+  SIGN_UP: '/sign-up',
+  VERIFY_NOTICE: '/verify-email-notice',
+  PROFILE_COMPLETION: '/complete-profile',
+  EMPLOYEE_VERIFICATION: '/employee-verification',
+  ACCOUNT_SUCCESS: '/account-success',
+  DASHBOARD: '/dashboard',
+  ADMIN_DASHBOARD: '/admin/dashboard'
+};
+
+//Added - user status options, simulating the different states a user's account can be in within the app. This allows for better management of user access and permissions based on their account status, ensuring that only approved users can access certain features and content within the app. Including education status to ensure users complete necessary educational content before accessing complaint submission features.
+export const USER_STATUS = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected', 
+  PROFILE_COMPLETED: 'profile_completed',
+  IS_VERIFIED: 'is_verified',
+  EDUCATION: 'has_completed_education'
 };
 
 //Added - file upload validation rules, simulating the logic that ensures users can only upload files that meet certain criteria (such as file type and size limits). This helps prevent issues with file handling and ensures a smoother user experience when attaching evidence to complaints.

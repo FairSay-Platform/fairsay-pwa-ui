@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import StepIndicator from "../components/StepIndicator";
 import { useAppContext } from "../context/AppContext";
+import { APP_STEPS } from "../utils/constants";
 
 const BG_IMAGE =
   "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
@@ -46,7 +47,7 @@ export default function CompleteProfile() {
     setIsSubmitting(false);
 
     if (success) {
-      navigate("/employee-verification");
+      navigate(APP_STEPS.EMPLOYEE_VERIFICATION);
     }
   };
 

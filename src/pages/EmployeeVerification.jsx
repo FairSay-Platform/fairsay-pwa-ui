@@ -4,6 +4,7 @@ import Logo from "../components/Logo";
 import StepIndicator from "../components/StepIndicator";
 import { useAppContext } from "../context/AppContext";
 import api from "../services/api";
+import { APP_STEPS, USER_STATUS } from "../utils/constants";
 
 const BG_IMAGE =
   "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
@@ -53,12 +54,12 @@ export default function EmployeeVerification() {
 
       const res = await api.post('/verification/submit', payload);
 
-      setUser(prev => ({ ...prev, verification_status: 'pending' }));
+      setUser(prev => ({ ...prev, verification_status: USER_STATUS.PENDING }));
 
-      navigate("/account-success");
+      navigate(APP_STEPS.ACCOUNT_SUCCESS);
 
     } catch (err) {
-      console.error("Verification failed:", err);
+      console.error("Submission failed:", err);
       showAlert(err.response?.data?.message || "Failed to submit verification.", "error");
     } finally {
       setIsSubmitting(false);

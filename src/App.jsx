@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import ProtectedRoutes from './components/ProtectedRoutes';
-import { APP_STEPS } from './utils/constants';
+import { APP_STEPS, USER_STATUS } from './utils/constants';
 import { Alert } from './components/Alert';
 import LandingPage from './pages/LandingPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
+import VerifyEmailNotice from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import CheckEmail from './pages/CheckEmail';
 import CompleteProfile from './pages/CompleteProfile';
@@ -36,25 +37,15 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           {/* Authentication Routes */}
-          <Route path="/sign-in" element={<SignIn />} />
-          <Route path="/sign-up" element={<SignUp />} />
+          <Route path={APP_STEPS.SIGN_IN} element={<SignIn />} />
+          <Route path={APP_STEPS.SIGN_UP} element={<SignUp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/check-email" element={<CheckEmail />} />
-
-          {/* Dashboard - Logged in users only */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoutes>
-                <Dashboard />
-              </ProtectedRoutes>
-            }
-          />
-          <Route path="/home" element={<Navigate to="/dashboard" replace />} />
+          <Route path={APP_STEPS.VERIFY_EMAIL} element={<VerifyEmailNotice />} />
 
           {/* Onboarding & Verification */}
           <Route
-            path="/complete-profile"
+            path={APP_STEPS.PROFILE_COMPLETION}
             element={
               <ProtectedRoutes>
                 <CompleteProfile />
@@ -62,7 +53,7 @@ function App() {
             }
           />
           <Route
-            path="/employee-verification"
+            path={APP_STEPS.EMPLOYEE_VERIFICATION}
             element={
               <ProtectedRoutes>
                 <EmployeeVerification />
@@ -70,13 +61,24 @@ function App() {
             }
           />
           <Route
-            path="/account-success"
+            path={APP_STEPS.ACCOUNT_SUCCESS}
             element={
               <ProtectedRoutes>
                 <AccountSuccess />
               </ProtectedRoutes>
             }
           />
+
+           {/* Dashboard - Logged in users only */}
+          <Route
+            path={APP_STEPS.DASHBOARD}
+            element={
+              <ProtectedRoutes>
+                <Dashboard />
+              </ProtectedRoutes>
+            }
+          />
+          <Route path="/home" element={<Navigate to="/dashboard" replace />} />
 
           {/* User Profile Management */}
           <Route path="/profile" element={
@@ -95,11 +97,11 @@ function App() {
             </ProtectedRoutes>
           } />
 
-          {/* Complaint Management - Requires Profile Verification */}
+          {/* Complaint Management - Requires Approved User Status */}
           <Route
             path="/my-complaints"
             element={
-              <ProtectedRoutes step={APP_STEPS.PROFILE_COMPLETION}>
+              <ProtectedRoutes step={USER_STATUS.APPROVED}>
                 <MyComplaints />
               </ProtectedRoutes>
             }
@@ -109,7 +111,7 @@ function App() {
           <Route
             path="/file-complaint"
             element={
-              <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+              <ProtectedRoutes step={USER_STATUS.EDUCATION}>
                 <ComplaintForm />
               </ProtectedRoutes>
             }
@@ -173,7 +175,7 @@ function App() {
 
           {/* Admin Routes */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin/dashboard" element={<ProtectedRoutes requireAdmin={true}>
+        <Route path={APP_STEPS.ADMIN_DASHBOARD} element={<ProtectedRoutes requireAdmin={true}>
             <AdminDashboard /></ProtectedRoutes>} />
           <Route path="/admin/complaints" element={<ProtectedRoutes requireAdmin={true}><AdminComplaints /></ProtectedRoutes>} />
           <Route path="/admin/users" element={<ProtectedRoutes requireAdmin={true}><AdminUsers /></ProtectedRoutes>} />

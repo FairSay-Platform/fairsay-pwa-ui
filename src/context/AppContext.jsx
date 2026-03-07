@@ -92,28 +92,9 @@ export const AppProvider = ({ children }) => {
       };
 
       const res = await api.post('/auth/register', backendData);
-      const { token, user: userBackendData } = res.data;
-      console.log("Registration response:", res.data);
-
-      if (token) {
-        localStorage.setItem('fs_token', token);
-
-        const normalizedUser = {
-          ...userBackendData,
-          firstName: userBackendData.first_name,
-          lastName: userBackendData.last_name,
-          isAdmin: ['super_admin', 'admin', 'investigator'].includes(userData.role) || userData.is_admin === true
-        };
-        setUser(normalizedUser);
-
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
-        showAlert(res.data.message, "success");
-        return { success: true, user: normalizedUser }; 
-      }
       
       showAlert(res.data.message, "success");
-      return { success: true };
+      return { success: true, needsVerification: true };
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Registration failed";
       showAlert(errorMsg, "error");
@@ -136,11 +117,19 @@ export const AppProvider = ({ children }) => {
       
       localStorage.setItem('fs_token', token);
       setUser(normalizedUser);
-      return { success: true, user: normalizedUser }; 
-    } catch (err) {
-      return { success: false, message: err.response?.data?.message || "Login failed"};
+    let redirectTo = "/dashboard";
+    if (!normalizedUser.profile_completed) {
+      redirectTo = "/complete-profile";
+    } else if (normalizedUser.isAdmin) {
+      redirectTo = "/admin/dashboard";
     }
-  };
+
+    return { success: true, user: normalizedUser, redirectTo }; 
+  } catch (err) {
+    const errorMsg = err.response?.data?.message || "Login failed";
+    return { success: false, message: errorMsg };
+  }
+};
 
   // Logout
   const logout = () => {

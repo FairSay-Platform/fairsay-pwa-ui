@@ -2,6 +2,7 @@ import Logo from "../components/Logo";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAppContext } from "../context/AppContext";
+import { APP_STEPS } from "../utils/constants";
 
 const BG_IMAGE =
   "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
@@ -21,30 +22,52 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setAlert({ show: false, message: "", type: "error" });
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (formData.password !== formData.confirmPassword) {
+    showAlert("Passwords do not match", "error");
+    return;
+  }
+
+  if (!formData.agreeToTerms) {
+    showAlert("You must agree to the terms to continue.", "error");
+    return;
+  }
+
+  setAlert({ show: false, message: "", type: "error" });
+
+  try {
+    const result = await register(formData);
     
-    if (formData.password !== formData.confirmPassword) {
-      showAlert("Passwords do not match", "error");
-      return;
-    }
-    
-    try {
-      const res = await register(formData);
+    if (result.success) {
+      setAlert({ 
+        show: true, 
+        message: "Account created successfully! Please check your email.", 
+        type: "success"
+      });
       
-      if (res.success) {
-        setAlert({ show: true, message: "Account created successfully! Please check your email.", type: "success"});
-        setTimeout(() => {
-          navigate("/complete-profile")
-        }, 3000);
-      } else {
-        setAlert({ show: true, message: res.message, type: "error"});
-      }
-    } catch (err) {
-      setAlert({ show: true, message: "Registration failed. Please try again", type: "error"});
+      setTimeout(() => {
+        navigate(APP_STEPS.VERIFY_NOTICE); 
+      }, 3000);
+    } else {
+     
+      setAlert({ 
+        show: true, 
+        message: result.message || "Registration failed. Please try again.", 
+        type: "error"
+      });
     }
-  };
+  } catch (err) {
+    setAlert({ 
+      show: true, 
+      message: "An unexpected error occurred. Please try again.", 
+      type: "error"
+    });
+  }
+};
 
   return (
     <div className="min-h-screen relative flex items-center justify-center px-4 py-10">
