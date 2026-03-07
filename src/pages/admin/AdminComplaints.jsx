@@ -38,8 +38,7 @@ export default function AdminComplaints() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
-  
-  // NEW: State to control the modal
+  const [viewingComplaint, setViewingComplaint] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
 
   const allowedTransitions = {
@@ -170,6 +169,12 @@ export default function AdminComplaints() {
                       <td className="px-4 py-3.5 text-gray-500 text-sm whitespace-nowrap">{dateStr}</td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <div className="flex items-center gap-2">
+                          <button 
+                              onClick={() => setViewingComplaint(c)}
+                              className="text-xs font-semibold px-3 py-1.5 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors border border-gray-200"
+                            >
+                              View Details
+                            </button>
                           <select
                             value={status}
                             onChange={(e) => handleStatusChange(compId, e.target.value)}
@@ -193,6 +198,7 @@ export default function AdminComplaints() {
                               📝 Add Report
                             </button>
                           )}
+                            
                         </div>
                       </td>
                     </tr>
@@ -218,11 +224,18 @@ export default function AdminComplaints() {
         showAlert={showAlert}
       />
 
+      {/* View Complaint Modal */}
+      <ViewComplaintModal 
+        complaint={viewingComplaint}
+        isOpen={!!viewingComplaint}
+        onClose={() => setViewingComplaint(null)}
+      />
+
     </AdminLayout>
   );
 }
 
-
+//Investigation Report Modal
 function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
   const [reportText, setReportText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -278,6 +291,85 @@ function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
             This report will be permanently attached to the case file.
           </p>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 border-t border-gray-100 px-6 py-4 flex items-center justify-end gap-3">
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="px-5 py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-70 flex items-center gap-2"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Report"}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+//View Complaint Modal
+
+function ViewComplaintModal({ complaint, isOpen, onClose }) {
+  if (!isOpen || !complaint) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        {/* Header */}
+        <div className="bg-gray-50 border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+          <div>
+            <h3 className="font-bold text-gray-900 font-poppins text-lg">Complaint Details</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Case #{complaint.id || complaint.tracking_id}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+          
+          {/* Top Info Bar */}
+          <div className="flex flex-wrap gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <div>
+              <p className="text-xs text-gray-500 font-inter mb-1">Complainant</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {complaint.is_anonymous ? "Anonymous Employee" : (complaint.complainant || "Unknown")}
+              </p>
+            </div>
+            <div className="w-px bg-gray-200 hidden sm:block"></div>
+            <div>
+              <p className="text-xs text-gray-500 font-inter mb-1">Type</p>
+              <p className="text-sm font-semibold text-gray-900">{complaint.type || complaint.complaint_type}</p>
+            </div>
+            <div className="w-px bg-gray-200 hidden sm:block"></div>
+            <div>
+              <p className="text-xs text-gray-500 font-inter mb-1">Date Submitted</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {new Date(complaint.created_at || complaint.date).toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <h4 className="text-sm font-bold text-gray-900 font-inter mb-2">Description of Incident</h4>
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <p className="text-sm text-gray-700 whitespace-pre-wrap font-inter leading-relaxed">
+                {complaint.description || "No detailed description provided."}
+              </p>
+            </div>
+          </div>
+
         </div>
 
         {/* Footer */}
