@@ -1,20 +1,33 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../components/Logo';
 import { APP_STEPS } from '../utils/constants';
 import { useAppContext } from '../context/AppContext';
+import api from '../services/api';
 
 const BG_IMAGE = "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
 
 export default function VerifyEmailNotice() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showAlert } = useAppContext();
   const [isResending, setIsResending] = React.useState(false);
 
+
+  const userEmail= location.state?.email || "";
+
   const handleResend = async () => {
     setIsResending(true);
+
+    if (!userEmail) {
+      showAlert("We couldn't find your email address. Please sign in again.", "error");
+      navigate(APP_STEPS.SIGN_IN);
+      return;
+    }
+
+    setIsResending(true);
     try {
-      // await api.post('/auth/resend-verification'); // Uncomment when implemented
+       await api.post('/auth/resend-verification', { email: userEmail });
          showAlert("Verification email resent! Please check your inbox.", "success"); 
     } catch (err) {
       showAlert("Failed to resend email. Please try again later.", "error");
@@ -45,7 +58,7 @@ export default function VerifyEmailNotice() {
           <h1 className="font-poppins font-bold text-2xl text-gray-900 mb-4">Check Your Email</h1>
           
           <p className="text-gray-600 mb-8 leading-relaxed">
-            We've sent a verification link to your email address. 
+            We've sent a verification link to <span className="font-semibold text-gray-800">{userEmail || "your email address"}</span>. 
             Please click the link in that email to activate your account and continue.
           </p>
 
@@ -62,7 +75,7 @@ export default function VerifyEmailNotice() {
             <p className="text-sm text-gray-500 mb-4">Didn't receive the email? Check your spam folder or wait a few minutes.</p>
             <button
               onClick={handleResend}
-              disabled={isResending}
+              disabled={isResending || !userEmail}
               className={`w-full py-3.5 rounded-xl ${isResending ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#0F766E] hover:bg-[#0D6B63]'} text-white font-semibold transition-colors`}
             >
               {isResending ? 'Resending...' : 'Resend Verification Email'}

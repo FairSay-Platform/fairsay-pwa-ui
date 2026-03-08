@@ -207,47 +207,6 @@ export const saveProgress = (progress) => {
   }
 };
 
-//Added - Mark a course as completed and unlock the next one
- 
-export const completeCourse = (courseId, score, userId) => {
-  const progress = getProgress();
-  
-  // Mark current course as completed
-  progress[courseId] = {
-    unlocked: true,
-    completed: true,
-    score: score,
-    completedAt: new Date().toISOString()
-  };
-  
-  // Unlock next course if it exists
-  const currentIndex = courseOrder.indexOf(courseId);
-  if (currentIndex !== -1 && currentIndex < courseOrder.length - 1) {
-    const nextCourseId = courseOrder[currentIndex + 1];
-    if (!progress[nextCourseId]) {
-      progress[nextCourseId] = { unlocked: true, completed: false, score: 0 };
-    } else {
-      progress[nextCourseId].unlocked = true;
-    }
-  }
-  
-  saveProgress(progress);
-
-  if (userId) {
-    logActivity(
-      userId,
-      "Module Completed",
-      `You completed ${courseId.replace(/-/g, '')} with a score of ${score}%`
-    );
-
-    const step = currentIndex + 1;
-    api.patch(`/users/progress`, { lessonCompleted: step }).catch(err => {
-      console.error("Failed to update user progress on server. Local progress saved", err);
-    });
-  }
-  return progress;
-};
-
 //Added - Check if a course is unlocked
 export const isCourseUnlocked = (courseId) => {
   const progress = getProgress();
@@ -260,29 +219,6 @@ export const isCourseCompleted = (courseId) => {
   return progress[courseId]?.completed === true;
 };
 
-// Added -Get the next course in sequence, returns null if last course
-export const getNextCourse = (currentCourseId) => {
-  const currentIndex = courseOrder.indexOf(currentCourseId);
-  if (currentIndex !== -1 && currentIndex < courseOrder.length - 1) {
-    return courseOrder[currentIndex + 1];
-  }
-  return null;
-};
-
-//Added - Get progress statistics
-export const getProgressStats = () => {
-  const progress = getProgress();
-  const completed = courseOrder.filter(id => progress[id]?.completed === true).length;
-  const unlocked = courseOrder.filter(id => progress[id]?.unlocked === true).length;
-  
-  return {
-    completed,
-    unlocked,
-    total: courseOrder.length,
-    completionPercentage: Math.round((completed / courseOrder.length) * 100)
-  };
-};
-
 //Added - Reset all progress (for testing/admin purposes)
 export const resetProgress = () => {
   const initialProgress = {
@@ -290,24 +226,6 @@ export const resetProgress = () => {
   };
   saveProgress(initialProgress);
   return initialProgress;
-};
-
-export const getCourseProgress = (courseId) => {
-  const progress = getProgress();
-  
-  //Added - check that the course is fully marked complete in your system, and return 100%
-  if (progress[courseId]?.completed) return 100;
-  
-  // Otherwise, check if they are currently inside a lesson (partial progress)
-  try {
-    const storedLessons = JSON.parse(localStorage.getItem(`fs_course_${courseId}`) || '[]');
-    if (storedLessons.length > 0) {
-       // Assuming average of 4 lessons per course, calculate rough percentage
-       return Math.min(99, Math.round((storedLessons.length / 4) * 100));
-    }
-  } catch(e) {}
-
-  return 0;
 };
 
 //Added - whistleblower services

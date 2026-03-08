@@ -50,7 +50,7 @@ const handleSubmit = async (e) => {
       });
       
       setTimeout(() => {
-        navigate(APP_STEPS.VERIFY_NOTICE); 
+        navigate(APP_STEPS.VERIFY_NOTICE, { state: { email: formData.email } }); 
       }, 3000);
     } else {
      

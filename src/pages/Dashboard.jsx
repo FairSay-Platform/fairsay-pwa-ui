@@ -10,17 +10,19 @@ import report from '../images/Report.svg';
 import whitecheckmark from '../images/Whitecheckmark.svg';
 import chatbubble from '../images/Chatbubble.svg';
 import ribbon from '../images/Ribbon.svg';
-import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/logic-helpers";
+import { getActivityIcon } from "../utils/logic-helpers";
 
 
  export default function Dashboard() {
-  const { user, logout } = useAppContext();
+  const { user } = useAppContext();
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [complaintStats, setComplaintStats] = useState({ active: 0, resolved: 0});
   const [aiCount, setAiCount] = useState(0);
 
-  const progressStats = getProgressStats();
+  const completedLessons = user?.lessons_completed || 0;
+  const totalCourses = courses.length || 5; 
+  const completionPercentage = Math.round((completedLessons / totalCourses) * 100);
   
   //To sync activities with localStorage
   useEffect(() => {
@@ -36,7 +38,7 @@ import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/l
           //To set recent activities (max 5)
           setActivities([...userLogs].reverse().slice(0, 5));
 
-          //To calculate total AI consultation sessions dynamically!
+          //To calculate total AI consultation sessions
           const aiSessions = userLogs.filter(log => 
             log.action?.includes("AI") || 
             log.action?.includes("Chat") || 
@@ -148,9 +150,9 @@ import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/l
           <TopStat 
             icon={book} 
             label="Education Progress" 
-            value={`${progressStats.completionPercentage}%`} 
-            detail={`${progressStats.completed} of ${progressStats.total} modules`} 
-            trend={progressStats.completionPercentage === 100 ? "Completed" : progressStats.completionPercentage > 0 ? "In Progress" : "Not Started"} 
+            value={`${completionPercentage}%`} 
+            detail={`${completedLessons} of ${totalCourses} modules`} 
+            trend={completionPercentage === 100 ? "Completed" : completionPercentage > 0 ? "In Progress" : "Not Started"} 
             corner="bg-[#0F766E]/20" 
             iconBg="bg-[#0F766E]" 
           />
@@ -243,7 +245,7 @@ import { getActivityIcon, getProgressStats, getCourseProgress } from "../utils/l
 
 // Sub-components
 function TopStat({ icon, label, value, detail, trend, badge, corner, iconBg }) {
-  // Little touch to make the trend text color match the wording!
+
   const trendColor = trend === "Completed" ? "text-green-600" : trend === "In Progress" ? "text-teal-600" : "text-gray-400";
 
   return (
@@ -307,6 +309,7 @@ function ActivityItem({ log }) {
 
 function EducationSidebar() {
   const navigate = useNavigate();
+  const completedLessonsCount = user?.lessons_completed || 0;
  
   return (
     <div className="bg-white rounded-xl border border-gray-300 p-6 shadow-lg">
@@ -318,9 +321,11 @@ function EducationSidebar() {
       </div>
       
       <div className="space-y-5 mb-8">
-        {courses.map((m) => {
+        {courses.map((m, index) => {
           
-          const progress = getCourseProgress(m.id);
+          const isCompleted = completedLessonsCount > index;
+          const isUnlocked = completedLessonsCount >= index;
+          const progress = isCompleted ? 100 : (isUnlocked ? 25 : 0);
           const isDone = progress === 100;
           
           return (

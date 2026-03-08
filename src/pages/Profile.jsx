@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getCourseProgress, getProgress } from '../utils/logic-helpers';
 import { courses } from '../data/courses';
 import Navbar from '../components/Navbar';
 import { useAppContext } from '../context/AppContext'; 
@@ -83,21 +82,19 @@ export default function Profile() {
     }
   }, [user]);
 
-  //To get learning progress from courseProgress utility
-  const allProgressData = getProgress();
-  
-  const learningProgress = courses.map((course) => {
-   
-    const courseData = allProgressData[course.id] || {};
-   
-    const exactPercentage = getCourseProgress(course.id); 
+  //To get learning progress from courseProgress utility function, which calculates based on user's completed lessons
+  const completedLessonsCount = user?.lessons_completed || 0; 
+
+  const learningProgress = courses.map((course, index) => {
+    const isCompleted = completedLessonsCount > index;
+    const isUnlocked = completedLessonsCount >= index;
 
     return {
       name: course.title,
-      percent: exactPercentage,
-      completed: courseData?.completed || false,
-      inProgress: courseData?.unlocked && !courseData?.completed,
-      locked: !courseData?.unlocked
+      percent: isCompleted ? 100 : (isUnlocked ? 25 : 0), 
+      completed: isCompleted,
+      inProgress: isUnlocked && !isCompleted,
+      locked: !isUnlocked
     };
   });
 

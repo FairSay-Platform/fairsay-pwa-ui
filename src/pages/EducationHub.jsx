@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { courses } from "../data/courses";
 import { useAppContext } from "../context/AppContext";
-import { isCourseUnlocked, getCourseProgress } from "../utils/logic-helpers";
 import Navbar from "../components/Navbar";
 
 //Additional learning modules
@@ -24,13 +23,18 @@ const optionalModules = [
 
 export default function EducationHub() {
 
+  const { user } = useAppContext();
+  const completedCount = user?.lessons_completed || 0;
+
   //Dynamically calculate progress
-  const enrichedCourses = courses.map((course) => {
-    const progress = getCourseProgress(course.id);
+  const enrichedCourses = courses.map((course, index) => {
+    const isCompleted = completedCount > index;
+    const isUnlocked = completedCount >= index;
+    const progress = isCompleted ? 100 : 0;
     return {
       ...course,
       actualProgress: progress,
-      isUnlocked: isCourseUnlocked(course.id),
+      isUnlocked: isUnlocked,
     };
   });
 
@@ -259,7 +263,6 @@ export default function EducationHub() {
 }
 
 function CourseCard({ course }) {
-  // Use the actual progress dynamically!
   const progressPercent = course.actualProgress;
   const lessonsCompleted = Math.round((progressPercent / 100) * course.lessons.length);
   
@@ -313,7 +316,7 @@ function CourseCard({ course }) {
             {course.lessons.reduce((acc, l) => acc + parseInt(l.duration), 0)} min total
           </div>
 
-          {/* DYNAMIC LOCK / UNLOCK LOGIC */}
+        
           {course.isUnlocked ? (
             <Link
               to={`/learning/lesson/${course.id}/1`}

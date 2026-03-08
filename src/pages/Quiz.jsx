@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { 
@@ -10,7 +10,6 @@ import {
   retaliationProtectionLessons, retaliationProtectionQuiz
 } from "../data/courses";
 import { useAppContext } from "../context/AppContext";
-import { completeCourse, getCourseProgress, getNextCourse } from "../utils/logic-helpers";
 
 // Helpers to grab the correct content based on the URL parameter
 const getDetailedLessons = (id) => {
@@ -38,49 +37,48 @@ const getDetailedQuiz = (id) => {
 export default function Quiz() {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  const { user, logout } = useAppContext();
+  
+  //To save progress to the database!
+  const { user, updateUser } = useAppContext();
   
   const [answers, setAnswers] = useState({});
   const [quizState, setQuizState] = useState("taking");
-  const [hasPassedBefore, setHasPassedBefore] = useState(false);
 
   const courseId_ = courseId || "workplace-harassment";
   
-  // Dynamically load course info
+  //To load course info
   const course = courses.find(c => c.id === courseId_);
   const courseTitle = course?.title || "Course Quiz";
   const lessons = getDetailedLessons(courseId_);
   const quiz = getDetailedQuiz(courseId_);
-  const nextCourseId = getNextCourse(courseId_);
   
-  // Calculate progress based on the current course
-  const progress = getCourseProgress(courseId_);
-
-  useEffect(() => {
-    // Check if the user has already passed this quiz
-    const storedProgress = JSON.parse(localStorage.getItem('fairsay_course_progress') || '{}');
-    if (storedProgress[courseId_]?.completed) {
-      setHasPassedBefore(true);
-    }
-  }, [courseId_]);
+  //Backend progress logic
+  const currentCourseIndex = courses.findIndex(c => c.id === courseId_);
+  const nextCourseId = courses[currentCourseIndex + 1]?.id;
+  const completedCount = user?.lessons_completed || 0;
+  
+  //Pass if the completed count is higher than this course's index
+  const hasPassedBefore = completedCount > currentCourseIndex;
+  const progress = hasPassedBefore ? 100 : 0;
 
   const handleSelect = (questionId, optionIdx) => {
     if (quizState === "submitted") return;
     setAnswers((prev) => ({ ...prev, [questionId]: optionIdx }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (Object.keys(answers).length < quiz.length) return;
     setQuizState("submitted");
     
-    // Calculate Score dynamically
+    //To calculate Score
     const finalScore = quiz.filter((q) => answers[q.id] === q.correctIndex).length;
     const finalScorePct = Math.round((finalScore / quiz.length) * 100);
     
-    // If they pass, officially complete the course!
-    if (finalScorePct >= 80) {
-      completeCourse(courseId_, finalScorePct, user?.id);
-      setHasPassedBefore(true);
+    //If they pass AND they haven't passed before, update the database
+    if (finalScorePct >= 80 && !hasPassedBefore) {
+      const newCompletedCount = currentCourseIndex + 1;
+      
+      await updateUser({ lessons_completed: newCompletedCount });
     }
   };
 
@@ -95,11 +93,10 @@ export default function Quiz() {
   const scorePct = quizState === "submitted"
     ? Math.round((score / quiz.length) * 100)
     : 0;
-  const passed = scorePct >= 80;
+  const passed = scorePct >= 80 || hasPassedBefore;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      
       <Navbar />
 
       <main className="max-w-[95%] mx-auto px-4 py-6">
@@ -293,7 +290,7 @@ export default function Quiz() {
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12" />
-                        <polyline points="12 19 5 12 12 5" />
+                        <polyline points="12 19 5 12 5" />
                       </svg>
                       Previous
                     </Link>
