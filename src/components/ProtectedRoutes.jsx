@@ -23,10 +23,15 @@ const isDevAdmin =
     return <Navigate to={APP_STEPS.SIGN_IN} state={{ from: location }} replace />;
   }
 
+  const userRole = String(user.role || user.role_name || user.userType || "").toLowerCase();
+
   //Role-Based Access Control (RBAC) with development bypass
   const hasElevatedAccess = 
-        user.role === 'super_admin' || 
-        user.role === 'admin' ||    
+        userRole === 'super_admin' ||
+        userRole === 'superadmin' || 
+        userRole === 'admin' ||  
+        userRole === 'investigator' ||  
+        userRole.includes('admin') ||
         user.isAdmin === true ||     
         user.id?.toString().startsWith('dev-') ||
         isDevAdmin;
