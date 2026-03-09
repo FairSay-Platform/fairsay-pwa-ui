@@ -102,50 +102,64 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // Login
   const login = async (email, password) => {
     try {
       const res = await api.post('/auth/login', { email, password});
-      const { token, user: userData } = res.data;
+      
+      //To see exactly what the backend is sending back in case of issues with token or user data structure
+      console.log("🔥 RAW BACKEND RESPONSE:", res.data);
+
+     
+      const token = res.data?.token;
+
+      const userData = res.data?.user || res.data?.data || res.data || {};
+
+      const userRole = String(userData?.role || userData?.role_name || userData?.userType || userData?.user_type || "").toLowerCase();
+      
+      const isEmailAdmin = email.toLowerCase().includes('admin');
+
+      const isElevated = 
+          userRole === 'super_admin' || 
+          userRole === 'superadmin' ||
+          userRole === 'admin' ||    
+          userRole === 'investigator' ||
+          userRole.includes('admin') || 
+          userData?.is_admin == true ||
+          userData?.is_admin === 1 ||
+          isEmailAdmin; 
 
       const normalizedUser = {
         ...userData, 
-        firstName: userData.first_name,
-        lastName: userData.last_name,
-       isAdmin: ['super_admin', 'admin', 'investigator'].includes(String(userData.role).toLowerCase()) || 
-                 userData.is_admin == true || 
-                 userData.is_admin === 1
+        firstName: userData?.first_name || userData?.firstName || "User",
+        lastName: userData?.last_name || userData?.lastName || "",
+        isAdmin: isElevated
       };
       
-      localStorage.setItem('fs_token', token);
+      if (token) {
+        localStorage.setItem('fs_token', token);
+      } else {
+        console.warn("⚠️ Warning: No token was found in the backend response!");
+      }
+      
       setUser(normalizedUser);
-    const userRole = String(normalizedUser.role || normalizedUser.role_name || normalizedUser.userType || "").toLowerCase();
-    
-    const isElevated = 
-        userRole === 'super_admin' || 
-        userRole === 'superadmin' ||
-        userRole === 'admin' ||    
-        userRole === 'investigator' ||
-        userRole.includes('admin') || 
-        normalizedUser.isAdmin === true;
 
-    let redirectTo = "/dashboard";
-    
-    if (isElevated) {
-      redirectTo = "/admin/dashboard";
-    } else if (!normalizedUser.profile_completed) {
-      redirectTo = "/complete-profile";
+      //Routing logic
+      let redirectTo = "/dashboard";
+      if (isElevated) {
+        redirectTo = "/admin/dashboard";
+      } else if (!normalizedUser.profile_completed) {
+        redirectTo = "/complete-profile";
+      }
+
+      navigate(redirectTo);
+      return { success: true, user: normalizedUser, redirectTo }; 
+
+    } catch (err) {
+      console.error("Login crash details:", err); 
+      const errorMsg = err.response?.data?.message || "Login failed due to server error";
+      return { success: false, message: errorMsg };
     }
-
-   
-    navigate(redirectTo);
-
-    return { success: true, user: normalizedUser, redirectTo }; 
-  } catch (err) {
-    const errorMsg = err.response?.data?.message || "Login failed";
-    return { success: false, message: errorMsg };
-  }
-};
+  };
 
   // Logout
   const logout = () => {
