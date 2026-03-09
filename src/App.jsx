@@ -119,7 +119,7 @@ function App() {
           <Route
             path="/complaint-success"
             element={
-              <ProtectedRoutes step={APP_STEPS.EDUCATION}>
+              <ProtectedRoutes step={USER_STATUS.EDUCATION}>
                 <ComplaintSuccess />
               </ProtectedRoutes>
             }
