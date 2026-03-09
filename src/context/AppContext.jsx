@@ -112,7 +112,9 @@ export const AppProvider = ({ children }) => {
         ...userData, 
         firstName: userData.first_name,
         lastName: userData.last_name,
-        isAdmin: ['super_admin', 'admin', 'investigator'].includes(userData.role) || userData.is_admin === true
+       isAdmin: ['super_admin', 'admin', 'investigator'].includes(String(userData.role).toLowerCase()) || 
+                 userData.is_admin == true || 
+                 userData.is_admin === 1
       };
       
       localStorage.setItem('fs_token', token);
@@ -191,12 +193,17 @@ export const AppProvider = ({ children }) => {
       if (token && token !== 'dev-bypass-token-123') {
         try {
           const res = await api.get('/protected');
+
+          console.log("Session valid, user data:", res.data.user);
+
           const normalized = {
             ...res.data.user,
             firstName: res.data.user.first_name,
             lastName: res.data.user.last_name,
-           isAdmin: ['super_admin', 'admin', 'investigator'].includes(res.data.user.role) || res.data.user.is_admin === true
-};
+          isAdmin: ['super_admin', 'admin', 'investigator'].includes(String(res.data.user.role).toLowerCase()) || 
+                     res.data.user.is_admin == true || 
+                     res.data.user.is_admin === 1
+          };
           setUser(normalized);
         } catch (err) {
           console.error("Session expired");
