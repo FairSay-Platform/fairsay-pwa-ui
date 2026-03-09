@@ -28,6 +28,10 @@ export default function CompleteProfile() {
     { number: 3, label: "Verification", status: "upcoming" },
   ];
 
+  const handleSkip = () => {
+sessionStorage.setItem('fs_skip_onboarding', 'true');
+    navigate('/dashboard');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -232,6 +236,13 @@ export default function CompleteProfile() {
                 )}
               </button>
             </div>
+            <div className="mt-4 text-center">  <button 
+  type="button" 
+  onClick={handleSkip}
+  className="mt-4 w-full text-center text-sm text-gray-500 font-semibold hover:text-gray-700 transition-colors"
+>
+  Skip for now and explore the dashboard
+</button></div>
           </form>
         </div>
       </div>

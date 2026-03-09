@@ -45,14 +45,17 @@ const isDevAdmin =
         return <Navigate to={APP_STEPS.DASHBOARD} replace />;
   }
 
+  //Temporarily skip onboarding 
+  const hasSkippedOnboarding = sessionStorage.getItem('fs_skip_onboarding') === 'true';
+
   //Profile Completion
-  if (!user.profile_completed && location.pathname !== APP_STEPS.PROFILE_COMPLETION) {
+  if (!user.profile_completed && !hasSkippedOnboarding && location.pathname !== APP_STEPS.PROFILE_COMPLETION) {
     return <Navigate to={APP_STEPS.PROFILE_COMPLETION} replace />;
   }
 
   //For employee verification (only if profile is done)
   const hasNotSubmittedID = !user.verification_status;
-  if (user.profile_completed && hasNotSubmittedID && location.pathname !== APP_STEPS.EMPLOYEE_VERIFICATION) {
+  if (user.profile_completed && hasNotSubmittedID && !hasSkippedOnboarding && location.pathname !== APP_STEPS.EMPLOYEE_VERIFICATION) {
     return <Navigate to={APP_STEPS.EMPLOYEE_VERIFICATION} replace />;
   }
 

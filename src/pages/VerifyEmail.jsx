@@ -17,8 +17,6 @@ export default function VerifyEmailNotice() {
   const userEmail= location.state?.email || "";
 
   const handleResend = async () => {
-    setIsResending(true);
-
     if (!userEmail) {
       showAlert("We couldn't find your email address. Please sign in again.", "error");
       navigate(APP_STEPS.SIGN_IN);
@@ -30,7 +28,7 @@ export default function VerifyEmailNotice() {
        await api.post('/auth/resend-verification', { email: userEmail });
          showAlert("Verification email resent! Please check your inbox.", "success"); 
     } catch (err) {
-      showAlert("Failed to resend email. Please try again later.", "error");
+      showAlert(err.response?.data?.message || "Failed to resend email. Please try again later.", "error");
     } finally {
       setIsResending(false);
     }

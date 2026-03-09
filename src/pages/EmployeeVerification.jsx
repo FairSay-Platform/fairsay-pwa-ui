@@ -28,6 +28,11 @@ export default function EmployeeVerification() {
     { number: 3, label: "Verification", status: "current" },
   ];
 
+  const handleSkip = () => {
+sessionStorage.setItem('fs_skip_onboarding', 'true');
+    navigate('/dashboard');
+  };
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     const { isValid, error } = validateFileUpload(file);
@@ -303,6 +308,13 @@ export default function EmployeeVerification() {
                 )}
               </button>
             </div>
+            <div className="mt-4 text-center">  <button 
+  type="button" 
+  onClick={handleSkip}
+  className="mt-4 w-full text-center text-sm text-gray-500 font-semibold hover:text-gray-700 transition-colors"
+>
+  Skip for now and explore the dashboard
+</button></div>
           </form>
         </div>
       </div>

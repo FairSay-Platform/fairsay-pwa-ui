@@ -38,6 +38,7 @@ import { getActivityIcon } from "../utils/logic-helpers";
           //To set recent activities (max 5)
           setActivities([...userLogs].reverse().slice(0, 5));
 
+
           //To calculate total AI consultation sessions
           const aiSessions = userLogs.filter(log => 
             log.action?.includes("AI") || 
@@ -75,13 +76,7 @@ import { getActivityIcon } from "../utils/logic-helpers";
     }
   }, [user]);
 
-  //To guardt the dashboard route and ensure profile completion
-  useEffect(() => {
-  if (user && !user.profile_completed && !user.isAdmin) {
-    navigate("/complete-profile");
-  }
-}, [user, navigate]);
-
+ 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
@@ -190,7 +185,7 @@ import { getActivityIcon } from "../utils/logic-helpers";
                 <ActionCard 
                 icon={book}
                 title="Continue Learning" desc="Resume your rights education modules" btnText="Go to Education hub" color="bg-[#0D7A6F]" onClick={() => navigate('/learning')} />
-                <ActionCard icon={report} title="File New Complaint" desc="Report a workplace rights violation" btnText="Start Complaint" color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" locked={ !user?.isVerified || progressStats.completionPercentage < 100 } onClick={() => navigate('/file-complaint')} />
+                <ActionCard icon={report} title="File New Complaint" desc="Report a workplace rights violation" btnText="Start Complaint" color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" locked={ !user?.isVerified || completionPercentage < 100 } onClick={() => navigate('/file-complaint')} />
                 <ActionCard icon={chatbubble} title="Ask AI Assistant" desc="Get instant guidance on your rights" btnText="Start Chat" color="bg-[#2D4495]"  onClick={() => navigate('/ai-assistant')} />
               </div>
             </section>
