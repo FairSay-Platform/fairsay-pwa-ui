@@ -117,12 +117,26 @@ export const AppProvider = ({ children }) => {
       
       localStorage.setItem('fs_token', token);
       setUser(normalizedUser);
+    const userRole = String(normalizedUser.role || normalizedUser.role_name || normalizedUser.userType || "").toLowerCase();
+    
+    const isElevated = 
+        userRole === 'super_admin' || 
+        userRole === 'superadmin' ||
+        userRole === 'admin' ||    
+        userRole === 'investigator' ||
+        userRole.includes('admin') || 
+        normalizedUser.isAdmin === true;
+
     let redirectTo = "/dashboard";
-    if (normalizedUser.isAdmin) {
+    
+    if (isElevated) {
       redirectTo = "/admin/dashboard";
     } else if (!normalizedUser.profile_completed) {
       redirectTo = "/complete-profile";
-    } 
+    }
+
+   
+    navigate(redirectTo);
 
     return { success: true, user: normalizedUser, redirectTo }; 
   } catch (err) {
