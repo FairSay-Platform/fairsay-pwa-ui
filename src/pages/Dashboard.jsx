@@ -307,7 +307,7 @@ function ActivityItem({ log }) {
   );
 }
 
-function EducationSidebar() {
+function EducationSidebar({ user }) {
   const navigate = useNavigate();
   const completedLessonsCount = user?.lessons_completed || 0;
  
