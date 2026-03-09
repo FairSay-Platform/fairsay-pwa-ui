@@ -151,7 +151,6 @@ export const AppProvider = ({ children }) => {
         redirectTo = "/complete-profile";
       }
 
-      navigate(redirectTo);
       return { success: true, user: normalizedUser, redirectTo }; 
 
     } catch (err) {
