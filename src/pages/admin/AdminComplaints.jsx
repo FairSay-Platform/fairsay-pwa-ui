@@ -356,13 +356,19 @@ function ViewComplaintModal({ complaint, isOpen, onClose }) {
             <div>
               <p className="text-xs text-gray-500 font-inter mb-1">Date Submitted</p>
               <p className="text-sm font-semibold text-gray-900">
-                {new Date(complaint.created_at || complaint.date).toLocaleString()}
+               {(complaint.created_at || complaint.date) 
+                  ? new Date(complaint.created_at || complaint.date).toLocaleString() 
+                  : "Unknown Date"}
               </p>
             </div>
           </div>
 
           {/* Description */}
           <div>
+            <h4 className="text-lg font-bold text-gray-900 font-poppins mb-1">
+              {complaint.title || "Untitled Report"}
+            </h4>
+            
             <h4 className="text-sm font-bold text-gray-900 font-inter mb-2">Description of Incident</h4>
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
               <p className="text-sm text-gray-700 whitespace-pre-wrap font-inter leading-relaxed">

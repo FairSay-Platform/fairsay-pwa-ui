@@ -11,6 +11,7 @@ export default function Whistleblowing() {
   const [hasWitnesses, setHasWitnesses] = useState(false);
   const [formData, setFormData] = useState({
     violationType: "",
+    title: "",
     description: "",
     location: "",
     dateOccurred: "",
@@ -37,6 +38,7 @@ export default function Whistleblowing() {
    const payload = new FormData();
     
     payload.append('violationType', formData.violationType || 'OTHER');
+    payload.append('title', formData.title || 'Untitled Report');
     payload.append('description', `Witnesses: ${hasWitnesses ? 'Yes' : 'No'}\n\n${formData.description}`);
     payload.append('location', formData.location || '');
     payload.append('dateOccurred', formData.dateOccurred || '');
