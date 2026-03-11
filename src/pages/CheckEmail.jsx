@@ -1,11 +1,22 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
+import api from "../services/api";
 
 export default function CheckEmail() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  
-  // Get email from either URL params or location state
+  const { addNotification } = useAppContext();
+
   const email = searchParams.get("email") || location.state?.email || "your email address";
+  const handleResend = async () => {
+    try {
+      // (Assuming you imported api and useAppContext for addNotification)
+      await api.post("/auth/forgot-password", { email });
+      addNotification("Email Sent!", "We just sent another reset link to your inbox.", "success");
+    } catch (err) {
+      addNotification("Error", "Failed to resend the email. Please try again.", "error");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
@@ -110,7 +121,7 @@ export default function CheckEmail() {
           {/* Resend link */}
           <p className="text-center font-inter text-sm font-semibold text-fairsay-blue mb-6">
             <button
-              type="button"
+              type="button" onClick={handleResend}
               className="hover:underline focus:outline-none"
             >
               Didn't receive the email? Resend
