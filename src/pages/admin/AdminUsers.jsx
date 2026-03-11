@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "../../components/AdminLayout";
-import { fetchAllUsersAdmin, updateUserRoleAdmin, verifyUserAdmin, getInitials } from "../../utils/logic-helpers";
+import { fetchAllUsersAdmin, updateUserRoleAdmin, verifyUserAdmin, getInitials, rejectUserAdmin } from "../../utils/logic-helpers";
 import { useAppContext } from "../../context/AppContext";
 
 const roleStyles = {
@@ -51,6 +51,17 @@ export default function AdminUsers() {
       showAlert("Failed to verify user.", "error");
     }
   };
+
+  const handleRejectUser = async (userId) => {
+    const res = await rejectUserAdmin(userId);
+    if (res.success) {
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, verification_status: 'rejected', proofUrl: null , proof_url: null } : u));
+      showAlert("User verification rejected!", "info");
+    } else {
+      showAlert(res.message ||"Failed to reject user verification.", "error");
+    }
+  };
+
 
   const filtered = users.filter((u) => {
     const fullName = `${u.first_name || u.firstName || ""} ${u.last_name || u.lastName || ""}`.trim();
@@ -143,7 +154,7 @@ export default function AdminUsers() {
                       <td className="px-5 py-4 whitespace-nowrap">
                        {!isVerified && (
                           <div className="flex items-center gap-2">
-                            {/* NEW: View Document Button (If the backend sends the URL) */}
+                            {/* View Document Button (If the backend sends the URL) */}
                             {(u.proofUrl || u.proof_url) && (
                               <a 
                                 href={u.proofUrl || u.proof_url} 
@@ -156,11 +167,25 @@ export default function AdminUsers() {
                             )}
                             
                             <button 
-                              onClick={() => handleVerifyUser(u.id)}
+                              onClick={() => {if (window.confirm("Are you sure you want to approve this user's verification?")) {
+                                handleVerifyUser(u.id);
+                              }
+                              }}
                               className="text-xs font-semibold px-3 py-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors border border-green-200"
                             >
                               Approve
                             </button>
+
+                            <button 
+  onClick={() => {
+    if (window.confirm("Are you sure you want to reject this user's verification?")) {
+      handleRejectUser(u.id);
+    }
+  }}
+  className="text-xs font-semibold px-3 py-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100 transition-colors border border-red-200"
+>
+  Reject
+</button>
                           </div>
                         )}
                       </td>

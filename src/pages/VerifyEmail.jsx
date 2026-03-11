@@ -10,7 +10,7 @@ const BG_IMAGE = "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b
 export default function VerifyEmailNotice() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { showAlert } = useAppContext();
+  const { user, setUser, showAlert } = useAppContext();
   const [isResending, setIsResending] = React.useState(false);
 
 
@@ -79,6 +79,35 @@ export default function VerifyEmailNotice() {
               {isResending ? 'Resending...' : 'Resend Verification Email'}
             </button>
           </div>
+          {/* 🛠️ DEV ONLY: Simulate clicking the link in the email */}
+          {import.meta.env.DEV && (
+            <button
+              onClick={() => {
+                // 1. Create a temporary verified session
+                const devUser = {
+                  id: 'dev-new-user-1',
+                  email: userEmail || 'test@example.com',
+                  firstName: 'New',
+                  lastName: 'User',
+                  role: 'user',
+                  email_verified: 1,
+                  isVerified: true,
+                  profile_completed: false // Forces them to the profile page!
+                };
+
+                // 2. Trick the browser into thinking we are logged in
+                localStorage.setItem('fs_token', 'dev-bypass-token-123');
+                localStorage.setItem('fs_user', JSON.stringify(devUser));
+                setUser(devUser);
+                
+                // 3. Fire the navigation!
+                navigate('/complete-profile'); 
+              }}
+              className="mt-4 w-full py-2 rounded-xl bg-purple-100 text-purple-700 font-bold border border-purple-300 hover:bg-purple-200 transition-colors"
+            >
+              🛠️ [DEV] Simulate Email Click & Login
+            </button>
+          )}
         </div>
       </div>
     </div>

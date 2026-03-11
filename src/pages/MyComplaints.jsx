@@ -31,8 +31,8 @@ export default function MyComplaints() {
             const styles = getStatusStyles(c.status);
             return {
               id: c.tracking_id, 
-              title: c.title,
-              description: c.description.substring(0, 100) + "...", 
+              title: c.title || "Untitled Complaint",
+              description: c.description ? c.description.substring(0, 100) + "..." : "No description provided.", 
               status: styles.label,
               statusColor: styles.color,
               borderColor: styles.border,
@@ -64,11 +64,12 @@ export default function MyComplaints() {
   const filteredComplaints = useMemo(() => {
     return complaints.filter((c) => {
       // To check search query against title, description, and id
+      const safeSearch = searchQuery.toLowerCase();
       const matchesSearch = 
         searchQuery === "" || 
-        c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.id.toLowerCase().includes(searchQuery.toLowerCase());
+        (c.title || "").toLowerCase().includes(safeSearch) ||
+        (c.description || "").toLowerCase().includes(safeSearch) ||
+        (c.id || "").toLowerCase().includes(safeSearch);
 
       // To check dropdowns
       const matchesStatus = statusFilter === "" || c.status === statusFilter;

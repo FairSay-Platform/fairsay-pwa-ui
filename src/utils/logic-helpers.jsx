@@ -350,3 +350,14 @@ export const verifyUserAdmin = async (userId) => {
     return { success: false, message: err.response?.data?.message || "Failed to verify user." };
   }
 };
+
+export const rejectUserAdmin = async (userId) => {
+    try {
+      await api.put(`/verification/admin/verify-user/${userId}/reject`);
+      
+      return { success: true, message: "User verification rejected." };
+    } catch (err) {
+      console.error("Failed to reject user verification", err);
+      return { success: false, message: err.response?.data?.message || "Failed to reject verification." };
+    }
+  };
