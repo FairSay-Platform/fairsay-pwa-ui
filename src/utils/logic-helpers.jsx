@@ -324,10 +324,10 @@ export const submitInvestigationReport = async (complaintId, reportText) => {
 export const fetchAllUsersAdmin = async () => {
   try {
     const res = await api.get('/admin/users');
-    return { success: true, data: res.data.users || res.data || [] };
+    return { success: true, data: res.data.data || [] };
   } catch (err) {
     console.error("Failed to fetch users", err);
-    return { success: true, data: [] }; 
+    return { success: false,message: err.response?.data?.message || "Failed to fetch users.", data: [] }; 
   }
 };
 

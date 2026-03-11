@@ -9,6 +9,7 @@ import SignUp from './pages/SignUp';
 import VerifyEmailNotice from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import CheckEmail from './pages/CheckEmail';
+import ResetPassword from './pages/ResetPassword';
 import CompleteProfile from './pages/CompleteProfile';
 import EmployeeVerification from './pages/EmployeeVerification';
 import AccountSuccess from './pages/AccountSuccess';
@@ -41,6 +42,7 @@ function App() {
           <Route path={APP_STEPS.SIGN_UP} element={<SignUp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/check-email" element={<CheckEmail />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path={APP_STEPS.VERIFY_NOTICE} element={<VerifyEmailNotice />} />
 
           {/* Onboarding & Verification */}
