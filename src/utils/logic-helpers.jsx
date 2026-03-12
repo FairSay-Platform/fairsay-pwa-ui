@@ -341,9 +341,9 @@ export const updateUserRoleAdmin = async (userId, newRole) => {
   }
 };
 
-export const verifyUserAdmin = async (userId) => {
+export const verifyUserAdmin = async (userId, notes = "") => {
   try {
-    const res = await api.put(`verification/admin/verify-user/${userId}/approve`);
+    const res = await api.put(`verification/admin/verify-user/${userId}/approve`, { notes });
     return { success: true, message: res.data?.message || "User verified successfully." };
   } catch (err) {
     console.error("Failed to verify user", err);
@@ -351,9 +351,9 @@ export const verifyUserAdmin = async (userId) => {
   }
 };
 
-export const rejectUserAdmin = async (userId) => {
+export const rejectUserAdmin = async (userId, notes = "") => {
     try {
-      await api.put(`/verification/admin/verify-user/${userId}/reject`);
+      await api.put(`/verification/admin/verify-user/${userId}/reject`, { notes });
       
       return { success: true, message: "User verification rejected." };
     } catch (err) {
