@@ -30,10 +30,12 @@ import AdminComplaints from './pages/admin/AdminComplaints';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminSecurity from './pages/admin/AdminSecurity';
 import ComplaintFeedback from './pages/ComplaintFeedback';
+import GlobalErrorHandler from './pages/ErrorHandler';
 
 function App() {
   return (
     <AppProvider>
+      <GlobalErrorHandler>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -188,6 +190,7 @@ function App() {
         </Routes>
         <Alert />
       </BrowserRouter>
+      </GlobalErrorHandler>
     </AppProvider>
   );
 }
