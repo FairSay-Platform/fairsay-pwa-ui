@@ -42,26 +42,27 @@ export default function AdminUsers() {
     }
   };
 
-  const handleVerifyUser = async (userId) => {
-    const res = await verifyUserAdmin(userId);
+  
+  const handleVerifyUser = async (userId, notes) => {
+    const res = await verifyUserAdmin(userId, notes);
     if (res.success) {
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isVerified: true, is_verified: true } : u));
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, verification_status: 'approved' } : u));
       showAlert("User verified successfully!", "success");
     } else {
       showAlert("Failed to verify user.", "error");
     }
   };
 
-  const handleRejectUser = async (userId) => {
-    const res = await rejectUserAdmin(userId);
+  
+  const handleRejectUser = async (userId, notes) => {
+    const res = await rejectUserAdmin(userId, notes);
     if (res.success) {
-      setUsers(prev => prev.map(u => u.id === userId ? { ...u, verification_status: 'rejected', proofUrl: null , proof_url: null } : u));
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, verification_status: 'rejected', proof_url: null } : u));
       showAlert("User verification rejected!", "info");
     } else {
-      showAlert(res.message ||"Failed to reject user verification.", "error");
+      showAlert(res.message || "Failed to reject user verification.", "error");
     }
   };
-
 
   const filtered = users.filter((u) => {
     const fullName = `${u.first_name || u.firstName || ""} ${u.last_name || u.lastName || ""}`.trim();
@@ -108,7 +109,7 @@ export default function AdminUsers() {
                   const initial = getInitials({ firstName: u.first_name || u.firstName, lastName: u.last_name || u.lastName }).charAt(0) || "U";
                   const avatarBg = avatarColors[initial] ?? "bg-gray-400";
                   const currentRole = (u.role || "user").toLowerCase();
-                  const isVerified = u.isVerified || u.is_verified;
+                  const status = u.verification_status || "unverified";
 
                   return (
                     <tr key={u.id} className="hover:bg-gray-50 transition-colors">
@@ -120,7 +121,7 @@ export default function AdminUsers() {
                           <div>
                             <div className="flex items-center gap-2">
                               <p className="font-semibold text-gray-900 text-sm">{fullName}</p>
-                              {isVerified && (
+                              {status === 'approved' && (
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" title="Verified Employee">
                                   <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg>
@@ -145,16 +146,19 @@ export default function AdminUsers() {
                         </select>
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
-                        {isVerified ? (
+                        {status === 'approved' ? (
                           <span className="text-green-600 text-sm font-medium">Active (Verified)</span>
-                        ) : (
+                        ) : status === 'pending' ? (
                           <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs font-semibold">Pending Verification</span>
+                        ) : status === 'rejected' ? (
+                          <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-semibold">Rejected</span>
+                        ) : (
+                          <span className="text-gray-500 text-sm font-medium">Unverified</span>
                         )}
                       </td>
                       <td className="px-5 py-4 whitespace-nowrap">
-                       {!isVerified && (
+                        {status === 'pending' && (
                           <div className="flex items-center gap-2">
-                            {/* View Document Button (If the backend sends the URL) */}
                             {(u.proofUrl || u.proof_url) && (
                               <a 
                                 href={u.proofUrl || u.proof_url} 
@@ -166,26 +170,35 @@ export default function AdminUsers() {
                               </a>
                             )}
                             
+                            {/* Approve with Prompt */}
                             <button 
-                              onClick={() => {if (window.confirm("Are you sure you want to approve this user's verification?")) {
-                                handleVerifyUser(u.id);
-                              }
+                              onClick={() => {
+                                const notes = window.prompt("Approve User: Enter optional approval notes (or leave blank):");
+                                if (notes !== null) { 
+                                  handleVerifyUser(u.id, notes);
+                                }
                               }}
                               className="text-xs font-semibold px-3 py-1.5 bg-green-50 text-green-700 rounded-md hover:bg-green-100 transition-colors border border-green-200"
                             >
                               Approve
                             </button>
 
+                            {/* Reject with required Prompt */}
                             <button 
-  onClick={() => {
-    if (window.confirm("Are you sure you want to reject this user's verification?")) {
-      handleRejectUser(u.id);
-    }
-  }}
-  className="text-xs font-semibold px-3 py-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100 transition-colors border border-red-200"
->
-  Reject
-</button>
+                              onClick={() => {
+                                const notes = window.prompt("Reject User: Please provide a reason for rejection:");
+                                if (notes !== null) {
+                                  if (notes.trim() === "") {
+                                    showAlert("Rejection notes are required.", "error");
+                                  } else {
+                                    handleRejectUser(u.id, notes);
+                                  }
+                                }
+                              }}
+                              className="text-xs font-semibold px-3 py-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100 transition-colors border border-red-200"
+                            >
+                              Reject
+                            </button>
                           </div>
                         )}
                       </td>
