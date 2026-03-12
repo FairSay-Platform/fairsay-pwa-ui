@@ -167,7 +167,7 @@ sessionStorage.setItem('fs_skip_onboarding', 'true');
                 onChange={(e) =>
                   setFormData({ ...formData, phoneNumber: e.target.value })
                 }
-                placeholder="+1 (555) 123-4567"
+                placeholder="+234 800 000 000"
                 className="w-full h-[51px] px-4 py-3 font-inter text-base border-[1.6px] border-fairsay-gray-200 rounded-[10px] placeholder:text-[rgba(10,10,10,0.5)] focus:outline-none focus:ring-2 focus:ring-fairsay-blue focus:border-transparent"
               />
             </div>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { askFairSayAI } from "../services/fs-services";
 import Navbar from "../components/Navbar";
+import ActionBanners from "../components/ActionBanners";
 
 export default function AIAssistant() {
   const {user} = useAppContext();
@@ -104,6 +105,7 @@ export default function AIAssistant() {
      <Navbar />
 
       <main className="max-w-[95%] mx-auto px-4 py-6">
+        <ActionBanners />
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] rounded-2xl p-6 lg:p-8 mb-6 text-white">
           <div className="flex items-center gap-4 mb-3">
