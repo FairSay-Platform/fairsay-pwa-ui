@@ -551,7 +551,7 @@ export default function ComplaintForm() {
               name: formData.personsInvolved || null,
               job_title: formData.jobTitle || null,
               department: formData.department || null,
-              has_witnesses: formData.hasWitnesses ?? false, // 🐛 FIX 1: Using ?? to protect the boolean!
+              has_witnesses: formData.hasWitnesses ?? false, 
               witness_info: formData.witnessInfo || null
             }
           ]
@@ -609,13 +609,14 @@ export default function ComplaintForm() {
         navigate("/complaint-success", { state: { trackingId: draftId || `DEV-TK-9999` } });
       } else {
         
-        // 🐛 FIX 2: We actually gather the Step 5 data and send it to the backend!
+       
         const finalPayload = {
           has_previously_reported: formData.hasPreviouslyReported ?? false,
           reported_to: formData.reportedTo || null,
           date_reported: formData.dateReported || null,
           action_taken: formData.actionTaken || null,
-          desired_outcome: formData.desiredOutcome || null
+          desired_outcome: formData.desiredOutcome || null,
+          impact_types: formData.impactTypes
         };
         
         // Push the payload into the final request

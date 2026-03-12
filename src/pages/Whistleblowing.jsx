@@ -3,9 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { COMPLAINT_CATEGORIES } from "../utils/constants";
 import { submitAnonymousWhistleblower } from "../utils/logic-helpers";
+import { useAppContext } from "../context/AppContext";
 
 export default function Whistleblowing() {
   const navigate = useNavigate();
+  const { showAlert } = useAppContext();
   const [showEducation, setShowEducation] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasWitnesses, setHasWitnesses] = useState(false);
@@ -29,7 +31,7 @@ export default function Whistleblowing() {
     e.preventDefault();
 
     if (!minDescCount) {
-      alert("Please provide a more detailed description (at least 50 characters).");
+      showAlert("Please provide a more detailed description (at least 50 characters).");
       return;
     }
     
@@ -54,9 +56,10 @@ export default function Whistleblowing() {
     setIsSubmitting(false);
 
     if (result.success) {
+      showAlert("Report submitted successfully", "success")
       navigate("/complaint-success", { state: { trackingId: result.trackingId } });
     } else {
-      alert(result.message || "Submission failed. Please try again or contact support.");
+      showAlert(result.message || "Submission failed. Please try again or contact support.");
     }
   };
 

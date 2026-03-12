@@ -47,6 +47,14 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path={APP_STEPS.VERIFY_NOTICE} element={<VerifyEmailNotice />} />
 
+          {/* Public Routes */}
+           <Route
+            path="/complaint-success"
+            element={
+                <ComplaintSuccess />
+            }
+          />
+
           {/* Onboarding & Verification */}
           <Route
             path={APP_STEPS.PROFILE_COMPLETION}
@@ -120,14 +128,7 @@ function App() {
               </ProtectedRoutes>
             }
           />
-          <Route
-            path="/complaint-success"
-            element={
-              <ProtectedRoutes step={USER_STATUS.EDUCATION}>
-                <ComplaintSuccess />
-              </ProtectedRoutes>
-            }
-          />
+         
          <Route 
   path="/feedback" 
   element={

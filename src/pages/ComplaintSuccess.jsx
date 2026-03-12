@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
-import { useAppContext } from "../context/AppContext"; // <-- Imported context!
+import { useAppContext } from "../context/AppContext"; 
 
 const NEXT_STEPS = [
   {
