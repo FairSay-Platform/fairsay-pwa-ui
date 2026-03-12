@@ -2,12 +2,31 @@ import { useState, useEffect } from "react";
 import AdminLayout from "../../components/AdminLayout";
 import { fetchAllComplaintsAdmin, updateComplaintStatusAdmin, getInitials, submitInvestigationReport } from "../../utils/logic-helpers";
 import { useAppContext } from "../../context/AppContext";
+import { COMPLAINT_CATEGORIES, PRIORITY_LIST } from "../../utils/constants";
 
-const severityStyles = {
-  Critical: "text-red-600 font-semibold",
-  High: "text-orange-500 font-semibold",
-  Medium: "text-blue-500 font-semibold",
-  Low: "text-gray-500 font-semibold",
+
+const getCategoryLabel = (backendType) => {
+  if (!backendType) return "Unspecified";
+  const category = COMPLAINT_CATEGORIES.find(c => c.id === backendType || c.value === backendType);
+  return category ? category.label : backendType;
+};
+
+
+const getSeverityInfo = (backendSeverity) => {
+  const severityStr = String(backendSeverity || "medium").toLowerCase();
+  const priorityObj = PRIORITY_LIST.find(p => p.id === severityStr);
+  
+  const colors = {
+    critical: "text-red-600 font-bold",
+    high: "text-orange-500 font-semibold",
+    medium: "text-blue-500 font-semibold",
+    low: "text-gray-500 font-medium",
+  };
+
+  return {
+    label: priorityObj ? priorityObj.label : "Medium Priority",
+    color: colors[severityStr] || colors.medium
+  };
 };
 
 const statusStyles = {
@@ -73,14 +92,14 @@ export default function AdminComplaints() {
   };
 
   const filtered = complaints.filter((c) => {
-    const compId = c.id || c.tracking_id || "";
+    const compId = c.tracking_id || c.id || "";
     const name = c.complainant || (c.is_anonymous ? "Anonymous" : "Unknown");
-    const type = c.type || c.complaint_type || "";
+    const typeLabel = getCategoryLabel(c.violation_type || c.type || c.complaint_type);
     const status = c.status || "Open";
 
     const matchSearch = compId.toString().toLowerCase().includes(search.toLowerCase()) ||
       name.toLowerCase().includes(search.toLowerCase()) ||
-      type.toLowerCase().includes(search.toLowerCase());
+      typeLabel.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "All Statuses" || status === statusFilter;
     
     return matchSearch && matchStatus;
@@ -142,28 +161,30 @@ export default function AdminComplaints() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map((c) => {
-                  const compId = c.id || c.tracking_id;
+                  
+                  const compId = c.tracking_id || c.id;
                   const name = c.complainant || (c.is_anonymous ? "Anonymous" : "Unknown");
-                  const type = c.type || c.complaint_type;
+                  const typeLabel = getCategoryLabel(c.violation_type || c.type);
+                  const severityInfo = getSeverityInfo(c.severity);
                   const status = c.status || "submitted";
-                  const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString() : c.date || "Just now";
+                  const dateStr = c.created_at ? new Date(c.created_at).toLocaleDateString() : (c.date || "Just now");
                   const validNextSteps = allowedTransitions[status] || [];
 
                   return (
                     <tr key={compId} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3.5 text-[#1E3A8A] font-medium text-xs whitespace-nowrap">#{compId}</td>
+                      <td className="px-4 py-3.5 text-[#1E3A8A] font-bold text-xs whitespace-nowrap">{compId}</td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <div className="flex items-center gap-2.5">
                           <div className={`w-7 h-7 rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
                             {getInitials(name)}
                           </div>
-                          <span className="text-gray-800 text-sm">{name}</span>
+                          <span className="text-gray-800 text-sm font-medium">{name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3.5 text-gray-600 text-sm whitespace-nowrap">{type}</td>
+                      <td className="px-4 py-3.5 text-gray-700 text-sm whitespace-nowrap">{typeLabel}</td>
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        <span className={`text-sm ${severityStyles[c.severity] ?? "text-gray-600"}`}>
-                          {c.severity || "Medium"}
+                        <span className={`text-xs px-2.5 py-1 rounded-md bg-gray-50 border border-gray-100 ${severityInfo.color}`}>
+                          {severityInfo.label}
                         </span>
                       </td>
                       <td className="px-4 py-3.5 text-gray-500 text-sm whitespace-nowrap">{dateStr}</td>
@@ -189,7 +210,6 @@ export default function AdminComplaints() {
                             ))}
                           </select>
                           
-                          
                           {status === 'investigation' && (
                             <button 
                               onClick={() => setSelectedCase(c)}
@@ -212,7 +232,6 @@ export default function AdminComplaints() {
         </div>
       </div>
 
-      {/* Report Modal */}
       <ReportModal 
         complaint={selectedCase} 
         isOpen={!!selectedCase} 
@@ -224,7 +243,6 @@ export default function AdminComplaints() {
         showAlert={showAlert}
       />
 
-      {/* View Complaint Modal */}
       <ViewComplaintModal 
         complaint={viewingComplaint}
         isOpen={!!viewingComplaint}
@@ -234,6 +252,9 @@ export default function AdminComplaints() {
     </AdminLayout>
   );
 }
+
+
+// MODALS
 
 //Investigation Report Modal
 function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
@@ -249,7 +270,7 @@ function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
     }
 
     setIsSubmitting(true);
-    const res = await submitInvestigationReport(complaint.id || complaint.tracking_id, reportText);
+    const res = await submitInvestigationReport(complaint.tracking_id || complaint.id, reportText);
     setIsSubmitting(false);
 
     if (res.success) {
@@ -264,19 +285,16 @@ function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
-        {/* Header */}
         <div className="bg-gray-50 border-b border-gray-100 px-6 py-4 flex items-center justify-between">
           <div>
             <h3 className="font-bold text-gray-900 font-poppins text-lg">Submit Investigation Report</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Case #{complaint.id || complaint.tracking_id}</p>
+            <p className="text-xs text-gray-500 mt-0.5">Case #{complaint.tracking_id || complaint.id}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
         </div>
 
-        {/* Body */}
         <div className="p-6">
           <label className="block text-sm font-semibold text-gray-800 mb-2 font-inter">
             Findings & Resolution Notes
@@ -287,105 +305,254 @@ function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
             placeholder="Detail your investigation steps, evidence reviewed, and final conclusions here..."
             className="w-full h-40 border border-gray-200 rounded-xl p-4 text-sm text-gray-700 outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A] transition-all resize-none"
           />
-          <p className="text-[11px] text-gray-400 mt-2 flex items-center gap-1.5">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-            This report will be permanently attached to the case file.
-          </p>
         </div>
 
-        {/* Footer */}
         <div className="bg-gray-50 border-t border-gray-100 px-6 py-4 flex items-center justify-end gap-3">
-          <button 
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            Cancel
-          </button>
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">Cancel</button>
           <button 
             type="button"
             onClick={handleReportSubmit}
             disabled={isSubmitting}
-            className="px-5 py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-70 flex items-center gap-2"
+            className="px-5 py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-70"
           >
             {isSubmitting ? "Submitting..." : "Submit Report"}
           </button>
         </div>
-
       </div>
     </div>
   );
 }
 
-//View Complaint Modal
-
 function ViewComplaintModal({ complaint, isOpen, onClose }) {
   if (!isOpen || !complaint) return null;
 
+  const isAnonymous = complaint.is_anonymous || complaint.keep_confidential === 1;
+
+  // Helper to safely format arrays 
+  const safeParse = (data) => {
+    if (!data) return [];
+    if (typeof data === 'string') {
+      try { return JSON.parse(data); } catch (e) { return []; }
+    }
+    return Array.isArray(data) ? data : [];
+  };
+
+  const impactArray = safeParse(complaint.impact_types);
+  const accused = complaint.parties && complaint.parties[0] ? complaint.parties[0] : null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[95vh]">
         
         {/* Header */}
-        <div className="bg-gray-50 border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+        <div className={`px-6 py-4 flex items-center justify-between border-b ${isAnonymous ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'}`}>
           <div>
-            <h3 className="font-bold text-gray-900 font-poppins text-lg">Complaint Details</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Case #{complaint.id || complaint.tracking_id}</p>
+            <div className="flex items-center gap-3 mb-1">
+              <h3 className={`font-bold font-poppins text-lg ${isAnonymous ? 'text-red-900' : 'text-gray-900'}`}>
+                {isAnonymous ? "Anonymous Whistleblower Report" : "Standard Employee Complaint"}
+              </h3>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${isAnonymous ? 'bg-red-200 text-red-800' : 'bg-blue-200 text-blue-800'}`}>
+                {complaint.tracking_id || complaint.id}
+              </span>
+            </div>
+            <p className={`text-xs ${isAnonymous ? 'text-red-600' : 'text-gray-500'}`}>
+              Submitted on {new Date(complaint.created_at || complaint.date).toLocaleString()}
+            </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-900 transition-colors p-1">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+        {/* Scrollable Body */}
+        <div className="p-6 overflow-y-auto space-y-8 bg-white">
           
-          {/* Top Info Bar */}
-          <div className="flex flex-wrap gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-            <div>
-              <p className="text-xs text-gray-500 font-inter mb-1">Complainant</p>
-              <p className="text-sm font-semibold text-gray-900">
-                {complaint.is_anonymous ? "Anonymous Employee" : (complaint.complainant || "Unknown")}
-              </p>
-            </div>
-            <div className="w-px bg-gray-200 hidden sm:block"></div>
-            <div>
-              <p className="text-xs text-gray-500 font-inter mb-1">Type</p>
-              <p className="text-sm font-semibold text-gray-900">{complaint.type || complaint.complaint_type}</p>
-            </div>
-            <div className="w-px bg-gray-200 hidden sm:block"></div>
-            <div>
-              <p className="text-xs text-gray-500 font-inter mb-1">Date Submitted</p>
-              <p className="text-sm font-semibold text-gray-900">
-               {(complaint.created_at || complaint.date) 
-                  ? new Date(complaint.created_at || complaint.date).toLocaleString() 
-                  : "Unknown Date"}
-              </p>
-            </div>
-          </div>
-
-          {/* Description */}
+          {/* Main Title & Description */}
           <div>
-            <h4 className="text-lg font-bold text-gray-900 font-poppins mb-1">
+            <h2 className="text-2xl font-bold text-gray-900 font-poppins mb-2">
               {complaint.title || "Untitled Report"}
-            </h4>
+            </h2>
+            <div className="flex gap-2 mb-4">
+              <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-semibold">
+                Category: {getCategoryLabel(complaint.violation_type || complaint.type)}
+              </span>
+              {complaint.is_ongoing && (
+                <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-md text-sm font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Ongoing Issue
+                </span>
+              )}
+            </div>
             
-            <h4 className="text-sm font-bold text-gray-900 font-inter mb-2">Description of Incident</h4>
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <h4 className="text-sm font-bold text-gray-900 font-inter mb-2 uppercase tracking-wider">Detailed Description</h4>
+            <div className="bg-gray-50 p-5 rounded-xl border border-gray-200">
               <p className="text-sm text-gray-700 whitespace-pre-wrap font-inter leading-relaxed">
                 {complaint.description || "No detailed description provided."}
               </p>
             </div>
           </div>
 
+          {/* Incident Details Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-100 pt-6">
+            <div>
+              <p className="text-xs text-gray-500 font-inter uppercase tracking-wider mb-1">Location of Incident</p>
+              <p className="text-sm font-semibold text-gray-900">{complaint.location || "Not specified"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-inter uppercase tracking-wider mb-1">Date/Time of Incident</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {complaint.date_of_incident ? new Date(complaint.date_of_incident).toLocaleDateString() : "Not specified"}
+                {complaint.time_of_incident ? ` at ${complaint.time_of_incident}` : ""}
+              </p>
+            </div>
+          </div>
+
+          {/* EXTRA DETAILS: Standard Complaints Only */}
+          {!isAnonymous && (
+            <div className="space-y-8">
+              
+              {/* COMPLAINANT & IMPACT */}
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="text-sm font-bold font-inter uppercase tracking-wider mb-4 text-[#1E3A8A]">1. Complainant Details & Impact</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-blue-50/50 p-5 rounded-xl border border-blue-100">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Complainant Name</p>
+                    <p className="text-sm font-semibold text-gray-900">{complaint.complainant || "Unknown"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Reported Impacts</p>
+                    {impactArray.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {impactArray.map(impact => (
+                          <span key={impact} className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-semibold rounded capitalize">
+                            {impact}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm font-medium text-gray-600">None specified</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* THE ACCUSED & WITNESSES */}
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="text-sm font-bold font-inter uppercase tracking-wider mb-4 text-[#1E3A8A]">2. Parties Involved</h4>
+                
+                {accused ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Accused Party</p>
+                      <p className="text-sm font-semibold text-gray-900">{accused.name || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Job Title</p>
+                      <p className="text-sm font-semibold text-gray-900">{accused.job_title || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Department</p>
+                      <p className="text-sm font-semibold text-gray-900">{accused.department || "Not provided"}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic mb-4">No accused party details provided.</p>
+                )}
+
+                {accused?.has_witnesses && accused?.witness_info && (
+                  <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                    <p className="text-xs text-amber-800 font-bold uppercase tracking-wider mb-1">Witness Information</p>
+                    <p className="text-sm text-amber-900 whitespace-pre-wrap">{accused.witness_info}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* PRIOR REPORTING & OUTCOMES */}
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="text-sm font-bold font-inter uppercase tracking-wider mb-4 text-[#1E3A8A]">3. Internal History & Desired Outcome</h4>
+                
+                {complaint.has_previously_reported ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 bg-gray-50 p-5 rounded-xl border border-gray-200">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Previously Reported To</p>
+                      <p className="text-sm font-semibold text-gray-900">{complaint.reported_to || "Not specified"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Date Reported</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {complaint.date_reported ? new Date(complaint.date_reported).toLocaleDateString() : "Not specified"}
+                      </p>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <p className="text-xs text-gray-500 mb-1">Action Taken Internally</p>
+                      <p className="text-sm font-medium text-gray-800">{complaint.action_taken || "None reported."}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic mb-4 bg-gray-50 p-4 rounded-xl border border-gray-200">This issue has not been reported internally prior to this complaint.</p>
+                )}
+
+                {complaint.desired_outcome && (
+                  <div>
+                    <p className="text-xs text-gray-500 font-inter uppercase tracking-wider mb-2">Desired Outcome</p>
+                    <p className="text-sm text-gray-800 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                      {complaint.desired_outcome}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* EVIDENCE SECTION */}
+          <div className="border-t border-gray-100 pt-6">
+            <h4 className="text-sm font-bold text-gray-900 font-inter uppercase tracking-wider mb-4 flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+              Attached Evidence
+            </h4>
+
+            {complaint.evidence && complaint.evidence.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {complaint.evidence.map((file, idx) => (
+                  <a 
+                    key={idx}
+                    href={file.file_url || file.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-xl hover:border-[#0F766E] hover:shadow-sm transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-100 transition-colors">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">
+                        {file.description || `Evidence File ${idx + 1}`}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">Click to view document</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-6 text-center">
+                <p className="text-sm text-gray-500">No evidence files were attached to this report.</p>
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 border-t border-gray-100 px-6 py-4 flex justify-end">
+        <div className="bg-gray-50 border-t border-gray-100 px-6 py-4 flex justify-end shrink-0">
           <button 
             onClick={onClose}
-            className="px-5 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg transition-colors"
+            className="px-6 py-2.5 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 text-sm font-bold rounded-xl transition-colors shadow-sm"
           >
-            Close
+            Close Window
           </button>
         </div>
 
