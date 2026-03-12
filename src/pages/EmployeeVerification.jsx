@@ -125,7 +125,7 @@ sessionStorage.setItem('fs_skip_onboarding', 'true');
                 onChange={(e) =>
                   setFormData({ ...formData, selfDeclaration: e.target.value })
                 }
-                placeholder="I declare that I am currently employed by [Company Name] in the position of [Job Title]. I u"
+                placeholder="I declare that I am currently employed by [Company Name] in the position of [Job Title]."
                 rows={4}
                 className="w-full px-4 py-3 font-inter text-base border-[1.6px] border-fairsay-gray-200 rounded-[10px] placeholder:text-[rgba(10,10,10,0.5)] focus:outline-none focus:ring-2 focus:ring-fairsay-blue focus:border-transparent resize-none"
                 required

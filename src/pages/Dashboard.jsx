@@ -11,6 +11,7 @@ import whitecheckmark from '../images/Whitecheckmark.svg';
 import chatbubble from '../images/Chatbubble.svg';
 import ribbon from '../images/Ribbon.svg';
 import { getActivityIcon } from "../utils/logic-helpers";
+import ActionBanners from "../components/ActionBanners";
 
 
  export default function Dashboard() {
@@ -85,50 +86,7 @@ import { getActivityIcon } from "../utils/logic-helpers";
 
       {/* Main Content */}
       <main className="max-w-full mx-auto px-8 py-8">
-        {/* Verification Banner */}
-        {user?.verification_status === 'pending' && (
-        <div className="mb-8 rounded-lg border-l-4 border-[#F0B100] bg-[#FEFCE8] p-4 flex items-start justify-between flex-col md:flex-row gap-4">
-          <div className="flex items-start gap-3">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="flex-shrink-0 mt-0.5"
-            >
-              <circle cx="12" cy="12" r="10" stroke="#F0B100" strokeWidth="2" />
-              <path d="M12 8V12" stroke="#F0B100" strokeWidth="2" strokeLinecap="round" />
-              <circle cx="12" cy="16" r="1" fill="#F0B100" />
-            </svg>
-            <div>
-              <div className="font-semibold text-sm text-[#333] mb-1">
-                Verification In Progress
-              </div>
-              <div className="text-sm text-[#92400E]">
-                Your employment verification is under review. You can access educational
-                materials while we verify your documents (usually within 24 hours).
-              </div>
-            </div>
-          </div>
-          <Link
-            to="/account-success"
-            className="text-sm text-[#1E3A8A] font-semibold hover:text-[#0F766E] whitespace-nowrap"
-          >
-            View Status
-          </Link>
-        </div>
-        )}
-
-       {user?.verification_status === 'rejected' && (
-  <div className="mb-8 rounded-lg border-l-4 border-red-600 bg-red-50 p-4 flex items-start justify-between flex-col md:flex-row gap-4">
-    <div className="flex items-start gap-3">
-       <div className="text-red-600 font-bold text-sm">Action Required: Verification Rejected</div>
-       <p className="text-sm text-red-800">Your proof was rejected. Please check your email for details and re-submit.</p>
-    </div>
-    <Link to="/employee-verification" className="text-sm text-red-700 font-bold underline">Re-submit Proof</Link>
-  </div>
-)} 
+      <ActionBanners />
 
         {/* Welcome Section */}
         <div className="mb-8">
