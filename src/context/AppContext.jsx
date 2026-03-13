@@ -81,7 +81,7 @@ export const AppProvider = ({ children }) => {
     setTimeout(() => setAlert(null), 4000);
   };
 
- // Sign-up
+ //Sign-up
   const register = async (userData) => {
     try {
       const backendData = {
@@ -102,20 +102,17 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  //Login
   const login = async (email, password) => {
     try {
       const res = await api.post('/auth/login', { email, password});
       
-      //To see exactly what the backend is sending back in case of issues with token or user data structure
       console.log("🔥 RAW BACKEND RESPONSE:", res.data);
-
-     
+      
       const token = res.data?.token;
-
       const userData = res.data?.user || res.data?.data || res.data || {};
 
       const userRole = String(userData?.role || userData?.role_name || userData?.userType || userData?.user_type || "").toLowerCase();
-      
       const isEmailAdmin = email.toLowerCase().includes('admin');
 
       const isElevated = 
@@ -128,17 +125,20 @@ export const AppProvider = ({ children }) => {
           userData?.is_admin === 1 ||
           isEmailAdmin; 
 
+      
       const normalizedUser = {
         ...userData, 
         firstName: userData?.first_name || userData?.firstName || "User",
         lastName: userData?.last_name || userData?.lastName || "",
-        isAdmin: isElevated
+        isAdmin: isElevated,
+        profile_completed: Boolean(userData.profile_completed),
+        verification_status: userData.verification_status || 'unverified'
       };
       
       if (token) {
-        localStorage.setItem('fs_token', token);
+        localStorage.setItem('fs_token', token);    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       } else {
-        console.warn("⚠️ Warning: No token was found in the backend response!");
+        console.warn("Warning: No token was found in the backend response!");
       }
       
       setUser(normalizedUser);
@@ -160,14 +160,15 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // Logout
+  //Logout
   const logout = () => {
     localStorage.removeItem('fs_token');
     localStorage.removeItem('fs_user');
+    delete api.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
-  // To update user
+  //To update user
   const updateUser = async (updatedData) => {
     try {
       if (!user?.id?.toString().startsWith('dev-')) {
@@ -187,17 +188,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // To attach token to axios headers when user state changes
-  useEffect(() => {
-    const token = localStorage.getItem('fs_token');
-    if (token && token !== 'dev-bypass-token-123') {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete api.defaults.headers.common['Authorization'];
-    }
-  }, [user]);
-
-  // To check for existing user session on app load
+  //Check for existing user session on app load
   useEffect(() => {
     const checkSession = async () => {
       const token = localStorage.getItem('fs_token');
@@ -205,79 +196,96 @@ export const AppProvider = ({ children }) => {
 
       if (token && token !== 'dev-bypass-token-123') {
         try {
-          const res = await api.get('/protected');
+          const res = await api.get('/auth/protected', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
 
-          console.log("Session valid, user data:", res.data.user);
+          console.log("Session restored!", res.data.user);
+          const u = res.data.user;
 
           const normalized = {
-            ...res.data.user,
-            firstName: res.data.user.first_name,
-            lastName: res.data.user.last_name,
-          isAdmin: ['super_admin', 'admin', 'investigator'].includes(String(res.data.user.role).toLowerCase()) || 
-                     res.data.user.is_admin == true || 
-                     res.data.user.is_admin === 1
+            ...u,
+            firstName: u.first_name || "User",
+            lastName: u.last_name || "",
+            isAdmin: ['super_admin', 'admin', 'investigator'].includes(String(u.role).toLowerCase()) || u.is_admin == true || u.is_admin === 1,
+            profile_completed: Boolean(u.profile_completed),
+            verification_status: u.verification_status || 'unverified'
           };
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           setUser(normalized);
+          
         } catch (err) {
-          console.error("Session expired");
+          console.error("Session expired or token invalid");
           logout();
         }
       } else if (devUser) {
         setUser(JSON.parse(devUser));
       }
+      
+    
       setLoading(false);
     };
+
     checkSession();
-  }, []);
+  }, []); 
 
   const devLogin = (persona) => {
-  const personas = {
-    admin: {
-      id: 'dev-admin-1',
-      firstName: 'Dev',
-      lastName: 'Admin',
-      email: 'admin@fairsay.dev',
-      role: 'super_admin',
-      isAdmin: true,
-      isVerified: true,
-      educated: true
-    },
-    whistleblower: {
-      id: 'dev-user-1',
-      firstName: 'John',
-      lastName: 'Whistleblower',
-      email: 'john@fairsay.dev',
-      role: 'user',
-      isAdmin: false,
-      isVerified: true,
-      educated: true
-    },
-    newbie: {
-      id: 'dev-user-2',
-      firstName: 'New',
-      lastName: 'User',
-      email: 'new@fairsay.dev',
-      role: 'user',
-      isAdmin: false,
-      isVerified: false,
-      educated: false
-    }
-  };
+    const personas = {
+      admin: {
+        id: 'dev-admin-1',
+        firstName: 'Dev',
+        lastName: 'Admin',
+        email: 'admin@fairsay.dev',
+        role: 'super_admin',
+        isAdmin: true,
+        isVerified: true,
+        educated: true
+      },
+      whistleblower: {
+        id: 'dev-user-1',
+        firstName: 'John',
+        lastName: 'Whistleblower',
+        email: 'john@fairsay.dev',
+        role: 'user',
+        isAdmin: false,
+        isVerified: true,
+        educated: true
+      },
+      newbie: {
+        id: 'dev-user-2',
+        firstName: 'New',
+        lastName: 'User',
+        email: 'new@fairsay.dev',
+        role: 'user',
+        isAdmin: false,
+        isVerified: false,
+        educated: false
+      }
+    };
 
-  const selectedPersona = personas[persona];
-  if (selectedPersona) {
-    localStorage.setItem('fs_token', 'dev-bypass-token-123');
-    localStorage.setItem('fs_user', JSON.stringify(selectedPersona));
-    setUser(selectedPersona);
-    showAlert(`Logged in as ${selectedPersona.firstName} (Dev Mode)`, "success");
-    return { success: true };
-  }
-  return { success: false };
-};
+    const selectedPersona = personas[persona];
+    if (selectedPersona) {
+      localStorage.setItem('fs_token', 'dev-bypass-token-123');
+      localStorage.setItem('fs_user', JSON.stringify(selectedPersona));
+      setUser(selectedPersona);
+      showAlert(`Logged in as ${selectedPersona.firstName} (Dev Mode)`, "success");
+      return { success: true };
+    }
+    return { success: false };
+  };
 
   return (
     <AppContext.Provider value={{ user, setUser, register, login, updateUser, loading, alert, showAlert, logout, notifications, addNotification, markAllAsRead, devLogin }}>
-      {children}
+
+      {/* To add a loading state instead of rendering children immediately */}
+
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <p className="text-gray-500 font-medium animate-pulse">Restoring session...</p>
+        </div>
+      ) : (
+        children
+      )}
     </AppContext.Provider>
   );
 };
