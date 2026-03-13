@@ -7,33 +7,19 @@ import { getInitials } from '../utils/logic-helpers';
 export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  
+  const { user, logout, notifications, markAllAsRead} = useAppContext();
   // --- NOTIFICATION STATE ---
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "Welcome to FairSay",
-      desc: "Complete your profile to get the most out of our AI Assistant.",
-      time: "Just now",
-      unread: true,
-    }
-  ]);
+  
 
-  const unreadCount = notifications.filter(n => n.unread).length;
-
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, unread: false })));
-  };
+  const unreadCount = notifications ? notifications.filter(n => n.unread).length : 0;
 
   // Refs for closing dropdowns when clicking outside
   const dropdownRef = useRef(null);
   const notificationRef = useRef(null);
   
   const location = useLocation();
-  const navigate = useNavigate();
-
-  const { user, logout } = useAppContext(); 
+  const navigate = useNavigate(); 
 
   // Detect scroll position
   useEffect(() => {
@@ -143,8 +129,15 @@ export default function Navbar() {
                       </div>
                     ))
                   ) : (
-                    <div className="p-12 text-center text-gray-400 text-sm font-inter">
-                      No notifications yet
+                  <div className="p-12 flex flex-col items-center justify-center text-center">
+                      <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300">
+                          <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-400 text-sm font-inter">No notifications yet
+                        
+                      </p>
                     </div>
                   )}
                 </div>
