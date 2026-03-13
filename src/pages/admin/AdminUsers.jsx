@@ -189,9 +189,9 @@ export default function AdminUsers() {
                         {status === 'approved' ? (
                           <span className="text-green-600 text-sm font-medium">Active (Verified)</span>
                         ) : status === 'pending' ? (
-                          <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs font-semibold">Pending Verification</span>
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-2.5 rounded-full text-xs font-semibold">Pending Verification</span>
                         ) : status === 'rejected' ? (
-                          <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-semibold">Rejected</span>
+                          <span className="bg-red-100 text-red-700 px-2 py-2.5 rounded-full text-xs font-semibold">Rejected</span>
                         ) : (
                           <span className="text-gray-500 text-sm font-medium">Unverified</span>
                         )}

@@ -12,7 +12,7 @@ const BG_IMAGE =
 
 export default function EmployeeVerification() {
   const navigate = useNavigate();
-  const { setUser, showAlert } = useAppContext();
+  const { setUser, showAlert, addNotification } = useAppContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -71,6 +71,9 @@ sessionStorage.setItem('fs_skip_onboarding', 'true');
       const res = await api.post('/verification/submit', payload);
 
       setUser(prev => ({ ...prev, verification_status: USER_STATUS.PENDING }));
+
+      addNotification("Verification Pending", "Your proof of employment has been submitted and is currently under review");
+      showAlert("Upload successful!", "success");
 
       navigate(APP_STEPS.ACCOUNT_SUCCESS);
 
