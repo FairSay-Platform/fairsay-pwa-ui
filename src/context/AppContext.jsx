@@ -196,7 +196,7 @@ export const AppProvider = ({ children }) => {
 
       if (token && token !== 'dev-bypass-token-123') {
         try {
-          const res = await api.get('/auth/protected', {
+          const res = await api.get('/auth/me', {
             headers: { Authorization: `Bearer ${token}` }
           });
 
