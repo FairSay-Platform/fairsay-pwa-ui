@@ -12,6 +12,7 @@ import {
 import { useAppContext } from "../context/AppContext";
 import { logActivity, isCourseUnlocked } from "../utils/logic-helpers";
 import { useState, useEffect } from "react";
+import api from "../services/api";
 
 // Helper to grab the correct detailed lesson content based on the URL parameter
 const getDetailedLessons = (id) => {
@@ -54,6 +55,24 @@ export default function Lesson() {
     const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId_}`) || '[]');
     setCompletedLessons(stored);
   }, [courseId_, currentId]);
+
+  //Track the lesson the user is currently reading
+  useEffect(() => {
+    const trackProgress = async () => {
+      try {
+        if (user && !user.id?.toString().startsWith('dev-')) {
+          // Pass a unique ID for this specific lesson
+          await api.post('/learning/progress', { 
+            courseId: courseId_, 
+            lessonId: `${courseId_}-lesson-${currentId}` 
+          });
+        }
+      } catch (err) {
+        console.error("Failed to track lesson progress", err);
+      }
+    };
+    trackProgress();
+  }, [courseId_, currentId, user]);
 
   if (!lesson) {
     return (
@@ -102,21 +121,29 @@ export default function Lesson() {
       navigate(`/learning/lesson/${courseId}/${currentId - 1}`);
   };
 
-  const handleNext = () => {
-    // 1. Mark this lesson as complete in local storage
-    const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId_}`) || '[]');
-    if (!stored.includes(currentId)) {
+  const handleNext = async () => {
+    //Mark this lesson as complete
+    if (!completedLessons.includes(currentId)) {
+      try {
+        if (user && !user.id?.toString().startsWith('dev-')) {
+          await api.post(`/learning/${courseId_}-lesson-${currentId}/complete`);
+        }
+      } catch (err) {
+        console.error("Failed to sync lesson completion to database", err);
+      }
+
+      //Local storage logic
+      const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId_}`) || '[]');
       const updatedLessons = [...stored, currentId];
       localStorage.setItem(`fs_course_${courseId_}`, JSON.stringify(updatedLessons));
       setCompletedLessons(updatedLessons);
       
-      // 2. Log this action so it appears on the Dashboard timeline!
+      //Log this action so it appears on the Dashboard timeline
       if (typeof logActivity === 'function' && user?.id) {
         logActivity(user.id, 'Lesson Completed', `Finished: ${lesson.title}`);
       }
     }
 
-    // 3. Navigate forward based on dynamic length
     if (currentId < lessons.length) {
       navigate(`/learning/lesson/${courseId_}/${currentId + 1}`);
     } else {

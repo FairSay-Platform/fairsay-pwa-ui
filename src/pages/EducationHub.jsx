@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { courses } from "../data/courses";
 import { useAppContext } from "../context/AppContext";
 import Navbar from "../components/Navbar";
+import api from "../services/api";
 
 //Additional learning modules
 const optionalModules = [
@@ -24,13 +26,58 @@ const optionalModules = [
 export default function EducationHub() {
 
   const { user } = useAppContext();
-  const completedCount = user?.lessons_completed || 0;
+  const [learningState, setLearningState] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  //Dynamically calculate progress
+  //Fetch real progress when the page loads
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const res = await api.get('/learning/state');
+        setLearningState(res.data);
+      } catch (error) {
+        console.error("Failed to fetch learning progress:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProgress();
+  }, []);
+
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F766E]"></div>
+      </div>
+    );
+  }
+
+  const completedLessonsMap = learningState?.completedLessons || {}; 
+  const currentCourseId = learningState?.currentCourseId || courses[0].id; 
+  
+  // Dynamically calculate progress 
   const enrichedCourses = courses.map((course, index) => {
-    const isCompleted = completedCount > index;
-    const isUnlocked = completedCount >= index;
-    const progress = isCompleted ? 100 : 0;
+    // Count how many lessons in a specific course are marked complete
+    const lessonsDoneInThisCourse = course.lessons.filter(l => completedLessonsMap[`${course.id}-lesson-${l.id}`]).length;
+    
+    // Calculate percentage (0 to 100)
+    const progress = Math.round((lessonsDoneInThisCourse / course.lessons.length) * 100) || 0;
+    
+    // It's completed if progress is 100%
+   let isPrevCourseCompleted = false;
+    if (index > 0) {
+      const prevCourse = courses[index - 1];
+      const prevDone = prevCourse.lessons.filter(l => 
+        completedLessonsMap[`${prevCourse.id}-lesson-${l.id}`]
+      ).length;
+      isPrevCourseCompleted = (prevDone === prevCourse.lessons.length);
+    }
+
+    //Unlocke if it's the first course or if the previous course in the array is 100% complete
+    const isUnlocked = index === 0 || isPrevCourseCompleted || 
+      course.id === currentCourseId;
+
     return {
       ...course,
       actualProgress: progress,
@@ -174,7 +221,7 @@ export default function EducationHub() {
             <h2 className="text-2xl font-bold text-gray-900 mb-5 font-poppins">Required Courses</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {enrichedCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <CourseCard key={course.id} course={course} completedLessonsMap={completedLessonsMap} />
               ))}
             </div>
           </div>
@@ -262,9 +309,8 @@ export default function EducationHub() {
   );
 }
 
-function CourseCard({ course }) {
+function CourseCard({ course, completedLessonsMap }) {
   const progressPercent = course.actualProgress;
-  const lessonsCompleted = Math.round((progressPercent / 100) * course.lessons.length);
   
   return (
     <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all ${!course.isUnlocked ? 'opacity-70 grayscale-[0.3]' : ''}`}>
@@ -351,7 +397,8 @@ function CourseCard({ course }) {
       <div className="border-t border-gray-50 px-6 py-3">
         <div className="flex flex-wrap gap-1.5">
           {course.lessons.map((lesson, idx) => {
-            const isCompleted = idx < lessonsCompleted;
+            const isCompleted = completedLessonsMap[`${course.id}-lesson-${lesson.id}`]; 
+            
             return (
               <div
                 key={lesson.id}

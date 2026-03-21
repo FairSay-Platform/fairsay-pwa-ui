@@ -10,6 +10,7 @@ import {
   retaliationProtectionLessons, retaliationProtectionQuiz
 } from "../data/courses";
 import { useAppContext } from "../context/AppContext";
+import api from "../services/api";
 
 // Helpers to grab the correct content based on the URL parameter
 const getDetailedLessons = (id) => {
@@ -39,7 +40,7 @@ export default function Quiz() {
   const navigate = useNavigate();
   
   //To save progress to the database!
-  const { user, updateUser } = useAppContext();
+  const { user, addNotification, setUser } = useAppContext();
   
   const [answers, setAnswers] = useState({});
   const [quizState, setQuizState] = useState("taking");
@@ -70,15 +71,35 @@ export default function Quiz() {
     if (Object.keys(answers).length < quiz.length) return;
     setQuizState("submitted");
     
-    //To calculate Score
+    //To calculate score
     const finalScore = quiz.filter((q) => answers[q.id] === q.correctIndex).length;
     const finalScorePct = Math.round((finalScore / quiz.length) * 100);
+    const hasPassedNow = finalScorePct >= 80;
     
-    //If they pass AND they haven't passed before, update the database
-    if (finalScorePct >= 80 && !hasPassedBefore) {
-      const newCompletedCount = currentCourseIndex + 1;
-      
-      await updateUser({ lessons_completed: newCompletedCount });
+   //To send score to the database
+    if (hasPassedNow) {
+      try {
+        if (user && !user.id?.toString().startsWith('dev-')) {
+          const res = await api.post('/learning/quiz', { 
+            courseId: courseId_, 
+            score: finalScorePct 
+          });
+
+          //Check if the complaint system is unlocked
+          if (res.data?.courseCompleted) {
+             setUser(prev => ({ ...prev, course_completed: true }));
+             addNotification(
+               "Training Complete! 🎉", 
+               "You have finished the required education and can now submit complaints.", 
+               "success"
+             );
+          } else {
+          addNotification("Module Passed!", "Great job, you can move on to the next one.", "success");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to save quiz score to database", err);
+      }
     }
   };
 
@@ -309,7 +330,7 @@ export default function Quiz() {
                 ) : (
                   <>
                     <Link
-                      to={`/learning/lesson/${courseId_}/1`}
+                      to={`/learning`}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-all"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
