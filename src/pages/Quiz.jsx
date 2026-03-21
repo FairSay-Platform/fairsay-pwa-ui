@@ -77,7 +77,7 @@ export default function Quiz() {
     const hasPassedNow = finalScorePct >= 80;
     
    //To send score to the database
-    if (hasPassedNow) {
+    if (hasPassedNow && !hasPassedBefore) {
       try {
         if (user && !user.id?.toString().startsWith('dev-')) {
           const res = await api.post('/learning/quiz', { 
@@ -89,7 +89,7 @@ export default function Quiz() {
           if (res.data?.courseCompleted) {
              setUser(prev => ({ ...prev, course_completed: true }));
              addNotification(
-               "Training Complete! 🎉", 
+               "Training Complete!", 
                "You have finished the required education and can now submit complaints.", 
                "success"
              );

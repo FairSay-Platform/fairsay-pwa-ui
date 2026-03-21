@@ -1,8 +1,8 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
-import { APP_STEPS } from "../utils/constants";
+import { APP_STEPS, USER_STATUS } from "../utils/constants";
 
-const ProtectedRoutes = ({ children, requireAdmin = false }) => {
+const ProtectedRoutes = ({ children, requireAdmin = false, step }) => {
     const { user, loading } = useAppContext();
     const location = useLocation();
 
@@ -28,11 +28,10 @@ const ProtectedRoutes = ({ children, requireAdmin = false }) => {
         userRole === 'admin' ||  
         userRole === 'investigator' ||  
         userRole.includes('admin') ||
-        user.isAdmin === true ||     
-        user.id?.toString().startsWith('dev-') ||
+        user.isAdmin === true ||  
         isDevAdmin;
 
-    // Admin Guard (kicks standard users out of /admin routes)
+    //Admin Guard
     if (requireAdmin && !hasElevatedAccess) {
         return <Navigate to={APP_STEPS.DASHBOARD} replace />;
     }
@@ -42,41 +41,50 @@ const ProtectedRoutes = ({ children, requireAdmin = false }) => {
         return children;
     }
 
-   //Onboarding Guards
-    
+    //Core Onboarding State
     const hasSkippedOnboarding = sessionStorage.getItem('fs_skip_onboarding') === 'true';
     const isSetupPage = [APP_STEPS.PROFILE_COMPLETION, APP_STEPS.EMPLOYEE_VERIFICATION].includes(location.pathname);
     const needsProfile = !user.profile_completed;
-    const needsVerification = !user.verification_status || user.verification_status === 'unverified' || user.verification_status === 'rejected';
+    const isActuallyVerified = user.verification_status === 'approved' || user.isVerified === true;
+    const needsVerification = !isActuallyVerified && (
+        !user.verification_status || 
+        user.verification_status === 'unverified' || 
+        user.verification_status === 'rejected'
+    );
 
-    //Restrict skipped users from sensitive forms
-    const restrictedPaths = ['/complaints', '/my-complaints', '/submit', '/file-complaints']; 
-    const isTryingToAccessRestricted = restrictedPaths.some(path => location.pathname.includes(path));
-
-    if (isTryingToAccessRestricted && (needsProfile || needsVerification)) {
-        // If they try to sneak into the complaint form without being fully verified, kick them to setup
-        return <Navigate to={needsProfile ? APP_STEPS.PROFILE_COMPLETION : APP_STEPS.EMPLOYEE_VERIFICATION} replace />;
+    
+    if (step) {
+        //Requires profile
+        if (needsProfile) return <Navigate to={APP_STEPS.PROFILE_COMPLETION} replace />;
+        
+        //Requires verification 
+        if (step === USER_STATUS.APPROVED || step === USER_STATUS.EDUCATION) {
+            if (!isActuallyVerified) {
+                return <Navigate to={APP_STEPS.EMPLOYEE_VERIFICATION} replace />;
+            }
+        }
+        
+        //Requires education
+        if (step === USER_STATUS.EDUCATION && !user.course_completed && !user.educated) {
+            return <Navigate to="/learning" replace />;
+        }
     }
 
-    if (!user.course_completed) {
-        return <Navigate to="/learning" replace />
-    }
-
-    //Profile Route Guard
+    //Profile Route Guard (for generic navigation)
     if (needsProfile && !hasSkippedOnboarding && location.pathname !== APP_STEPS.PROFILE_COMPLETION) {
         return <Navigate to={APP_STEPS.PROFILE_COMPLETION} replace />;
     }
 
-    //Verification Route Guard
+    //Verification Route Guard (for generic navigation)
     if (!needsProfile && needsVerification && !hasSkippedOnboarding && location.pathname !== APP_STEPS.EMPLOYEE_VERIFICATION) {
         return <Navigate to={APP_STEPS.EMPLOYEE_VERIFICATION} replace />;
     }
 
+    //To prevent fully onboarded users from going back to setup pages
     if (!needsProfile && !needsVerification && isSetupPage) {
         return <Navigate to={APP_STEPS.DASHBOARD} replace />;
     }
 
-   
     return children;
 }
 
