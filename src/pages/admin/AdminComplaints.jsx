@@ -163,7 +163,7 @@ export default function AdminComplaints() {
                 {filtered.map((c) => {
                   
                   const compId = c.tracking_id || c.id;
-                  const name = c.complainant || (c.is_anonymous ? "Anonymous" : "Unknown");
+                  const name = c.complainant || (c.is_anonymous ? "Anonymous" : "Anonymous Employee");
                   const typeLabel = getCategoryLabel(c.violation_type || c.type);
                   const severityInfo = getSeverityInfo(c.severity);
                   const status = c.status || "submitted";
