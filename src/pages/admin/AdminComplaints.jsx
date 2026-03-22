@@ -83,7 +83,7 @@ export default function AdminComplaints() {
     const res = await updateComplaintStatusAdmin(id, newStatus);
     if (res.success) {
       setComplaints((prev) =>
-        prev.map((c) => (c.id === id || c.tracking_id === id ? { ...c, status: newStatus } : c))
+        prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c))
       );
       showAlert("Complaint status updated!", "success");
     } else {
@@ -198,7 +198,7 @@ export default function AdminComplaints() {
                             </button>
                           <select
                             value={status}
-                            onChange={(e) => handleStatusChange(compId, e.target.value)}
+                            onChange={(e) => handleStatusChange(c.id, e.target.value)}
                             disabled={validNextSteps.length === 0 || user?.role !== 'super_admin'} 
                             className={`text-xs font-semibold px-2.5 py-1.5 rounded-full border-0 outline-none cursor-pointer focus:ring-2 focus:ring-[#1E3A8A] ${statusStyles[status] || statusStyles['submitted']} ${validNextSteps.length === 0 ? 'opacity-70 cursor-not-allowed' : ''}`}
                           >
@@ -270,7 +270,7 @@ function ReportModal({ complaint, isOpen, onClose, onSuccess, showAlert }) {
     }
 
     setIsSubmitting(true);
-    const res = await submitInvestigationReport(complaint.tracking_id || complaint.id, reportText);
+    const res = await submitInvestigationReport(complaint.id, reportText);
     setIsSubmitting(false);
 
     if (res.success) {

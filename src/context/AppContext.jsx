@@ -277,15 +277,6 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider value={{ user, setUser, register, login, updateUser, loading, alert, showAlert, logout, notifications, addNotification, markAllAsRead, devLogin }}>
 
-      {/* To add a loading state instead of rendering children immediately */}
-
-      {loading ? (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <p className="text-gray-500 font-medium animate-pulse">Restoring session...</p>
-        </div>
-      ) : (
-        children
-      )}
     </AppContext.Provider>
   );
 };
