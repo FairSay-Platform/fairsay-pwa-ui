@@ -276,7 +276,7 @@ export const AppProvider = ({ children }) => {
 
   return (
     <AppContext.Provider value={{ user, setUser, register, login, updateUser, loading, alert, showAlert, logout, notifications, addNotification, markAllAsRead, devLogin }}>
-
+        {children}
     </AppContext.Provider>
   );
 };
