@@ -23,7 +23,6 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 
-
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -45,15 +44,15 @@ const handleSubmit = async (e) => {
     if (result.success) {
       setAlert({ 
         show: true, 
-        message: "Account created successfully! Please check your email.", 
+        message: "Account created successfully! Redirecting to sign in...", 
         type: "success"
       });
       
       setTimeout(() => {
-        navigate(APP_STEPS.VERIFY_NOTICE, { state: { email: formData.email } }); 
+        navigate("/sign-in"); 
       }, 3000);
     } else {
-     
+      
       setAlert({ 
         show: true, 
         message: result.message || "Registration failed. Please try again.", 

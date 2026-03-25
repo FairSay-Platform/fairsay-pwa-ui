@@ -61,9 +61,10 @@ export default function Lesson() {
     const trackProgress = async () => {
       try {
         if (user && !user.id?.toString().startsWith('dev-')) {
-          // Pass a unique ID for this specific lesson
+          //Send courseSlug and lessonNumber
           await api.post('/learning/progress', { 
-            courseId: courseId_, 
+            courseSlug: courseId_,
+            lessonNumber: currentId,
             lessonId: `${courseId_}-lesson-${currentId}` 
           });
         }
@@ -110,15 +111,15 @@ export default function Lesson() {
     );
   }
 
-  // Calculate real progress dynamically based on current module's length!
+  // Calculate real progress dynamically based on current module's length
   const progress = Math.round((completedLessons.length / lessons.length) * 100);
   const isCurrentLessonCompleted = completedLessons.includes(lesson.id);
 
+  
   const handlePrev = () => {
-    if (currentId > 1)
-      navigate(`/learning/lesson/${courseId}/${currentId - 1}`);
-    if (currentId > 1)
-      navigate(`/learning/lesson/${courseId}/${currentId - 1}`);
+    if (currentId > 1) {
+      navigate(`/learning/lesson/${courseId_}/${currentId - 1}`);
+    }
   };
 
   const handleNext = async () => {
@@ -126,7 +127,10 @@ export default function Lesson() {
     if (!completedLessons.includes(currentId)) {
       try {
         if (user && !user.id?.toString().startsWith('dev-')) {
-          await api.post(`/learning/${courseId_}-lesson-${currentId}/complete`);
+          await api.post(`/learning/${courseId_}-lesson-${currentId}/complete`, {
+            courseSlug: courseId_,
+            lessonNumber: currentId
+          });
         }
       } catch (err) {
         console.error("Failed to sync lesson completion to database", err);
