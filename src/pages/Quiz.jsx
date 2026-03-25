@@ -80,8 +80,9 @@ export default function Quiz() {
     if (hasPassedNow && !hasPassedBefore) {
       try {
         if (user && !user.id?.toString().startsWith('dev-')) {
+          // ✅ FIX: Changed courseId to courseSlug to match backend strictness
           const res = await api.post('/learning/quiz', { 
-            courseId: courseId_, 
+            courseSlug: courseId_, 
             score: finalScorePct 
           });
 
