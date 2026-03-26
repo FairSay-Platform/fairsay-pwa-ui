@@ -118,6 +118,34 @@ export default function MyComplaints() {
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
       <Navbar />
 
+      {/* Back to Dashboard navigation */}
+      <div className="flex items-center justify-end px-4 pt-4 mb-2">
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-base mr-2 lg:mr-4"
+          style={{ textDecoration: 'none' }}
+          aria-label="Back to Dashboard"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="inline-block align-middle"
+          >
+            <path
+              d="M15 19l-7-7 7-7"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="align-middle" style={{ lineHeight: 1 }}>Back to Dashboard</span>
+        </Link>
+      </div>
+
       <main className="max-w-[98%] mx-auto px-6 py-7">
         {/* Page header */}
         <div className="flex items-start justify-between mb-5 flex-wrap gap-3.5">

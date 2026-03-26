@@ -302,7 +302,7 @@ function EducationSidebar({ user }) {
       
       <button 
         onClick={() => navigate('/learning')}
-        className="w-full bg-gradient-to-b from-[#1e3a8a] to-[#0F766E] hover:bg-[#162d6b] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+        className="w-full bg-fairsay-blue hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
       >
         Continue Learning <span>→</span>
       </button>

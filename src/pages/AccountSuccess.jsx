@@ -7,6 +7,34 @@ const BG_IMAGE =
 export default function AccountSuccess() {
   return (
     <div className="min-h-screen relative flex items-center justify-center px-4 py-8">
+      {/* Back to Profile link */}
+      <div className="absolute left-0 top-0 w-full max-w-[640px] mx-auto px-4 pt-6 z-20">
+        <div className="mb-4 flex justify-end">
+          <Link
+            to="/profile"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-600 font-medium text-base"
+            style={{ textDecoration: 'none' }}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="inline-block align-middle"
+            >
+              <path
+                d="M15 19l-7-7 7-7"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="align-middle" style={{ lineHeight: 1 }}>Back to Profile</span>
+          </Link>
+        </div>
+      </div>
       <img
         src={BG_IMAGE}
         alt=""

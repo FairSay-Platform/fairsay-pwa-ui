@@ -649,6 +649,33 @@ export default function ComplaintForm() {
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
       <Navbar />
 
+      <div className="flex items-center justify-end px-4 pt-4 mb-2">
+        <Link
+          to="/my-complaints"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-base mr-2 lg:mr-4"
+          style={{ textDecoration: 'none' }}
+          aria-label="Back to Complaints"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="inline-block align-middle"
+          >
+            <path
+              d="M15 19l-7-7 7-7"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="align-middle" style={{ lineHeight: 1 }}>Back to Complaints</span>
+        </Link>
+      </div>
+
       <main className="max-w-[95%] mx-auto px-6 py-8">
         {/* Hero banner */}
         <div
@@ -720,9 +747,9 @@ export default function ComplaintForm() {
             <button
               onClick={currentStep === 5 ? handleSubmit : handleNext}
               disabled={isProcessing}
-              className={`flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-white text-xs font-semibold transition-opacity 
+              className={`flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-white text-xs font-semibold transition-opacity bg-fairsay-blue 
                 ${isProcessing ? 'opacity-70 cursor-wait' : 'hover:opacity-90'}`}
-              style={{ background: 'linear-gradient(180deg, #1E3A8A 0%, #0F766E 100%)' }}
+              style={{}}
             >
               {currentStep === 5 
                 ? (isProcessing ? "Submitting..." : "Submit Complaint") 

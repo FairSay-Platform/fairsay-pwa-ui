@@ -60,8 +60,32 @@ export default function ComplaintSuccess() {
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
       {/* Header */}
       <header className="bg-white border-b border-[#E5E7EB] px-6 py-4">
-        <div className="max-w-[95%] mx-auto">
+        <div className="max-w-[95%] mx-auto flex items-center justify-between">
           <Logo />
+          <Link
+            to="/my-complaints"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-base mr-4 lg:mr-8"
+            style={{ textDecoration: 'none' }}
+            aria-label="Back to Complaints"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="inline-block align-middle"
+            >
+              <path
+                d="M15 19l-7-7 7-7"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="align-middle" style={{ lineHeight: 1 }}>Back to Complaints</span>
+          </Link>
         </div>
       </header>
 

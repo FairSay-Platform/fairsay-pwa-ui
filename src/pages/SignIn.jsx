@@ -235,7 +235,7 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-[51px] flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-fairsay-blue to-fairsay-teal font-inter font-semibold text-base leading-6 text-white hover:opacity-90 transition-opacity disabled:opacity-70"
+              className="w-full h-[51px] flex items-center justify-center gap-2 rounded-[10px] bg-fairsay-blue font-inter font-semibold text-base leading-6 text-white px-4 py-3.5 hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-opacity disabled:opacity-70"
             >
               {isSubmitting ? "Signing in..." : "Sign in"}
               {!isSubmitting && (
