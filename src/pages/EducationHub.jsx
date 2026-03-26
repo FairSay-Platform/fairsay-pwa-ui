@@ -57,6 +57,12 @@ export default function EducationHub() {
 const completedLessonsMap = Array.isArray(arrayLessons) 
   ? arrayLessons.reduce((map, lesson) => {
       map[lesson.lesson_id] = true;
+      if (lesson.course_slug) {
+        map[`${lesson.course_slug}-lesson-${lesson.lesson_id}`] = true;
+        if (lesson.lesson_number) {
+            map[`${lesson.course_slug}-lesson-${lesson.lesson_number}`] = true;
+          }
+      }
       return map;
     }, {})
   : arrayLessons; 
