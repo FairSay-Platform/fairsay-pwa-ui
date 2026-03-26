@@ -25,7 +25,6 @@ const optionalModules = [
 ];
 
 export default function EducationHub() {
-
   const { user } = useAppContext();
   const [learningState, setLearningState] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,42 +53,62 @@ export default function EducationHub() {
     );
   }
 
- const arrayLessons = learningState?.completedLessons || {};
-const completedLessonsMap = Array.isArray(arrayLessons) 
-  ? arrayLessons.reduce((map, lesson) => {
-      map[lesson.lesson_id] = true;
-      if (lesson.course_slug) {
-        map[`${lesson.course_slug}-lesson-${lesson.lesson_id}`] = true;
-        if (lesson.lesson_number) {
+  // ✅ 1. MAP COMPLETED LESSONS (With fallbacks for the backend IDs)
+  const arrayLessons = learningState?.completedLessons || [];
+  const completedLessonsMap = Array.isArray(arrayLessons) 
+    ? arrayLessons.reduce((map, lesson) => {
+        map[lesson.lesson_id] = true; // Fallback raw ID
+        if (lesson.course_slug) {
+          map[`${lesson.course_slug}-lesson-${lesson.lesson_id}`] = true;
+          if (lesson.lesson_number) {
             map[`${lesson.course_slug}-lesson-${lesson.lesson_number}`] = true;
           }
-      }
-      return map;
-    }, {})
-  : arrayLessons; 
-  const currentCourseId = learningState?.currentCourseId || courses[0].id; 
-  
-  // Dynamically calculate progress 
+        }
+        return map;
+      }, {})
+    : {}; 
+
+  // ✅ 2. MAP PASSED QUIZZES (This was missing entirely!)
+  const arrayQuizzes = learningState?.quizStatuses || [];
+  const passedQuizzesMap = Array.isArray(arrayQuizzes)
+    ? arrayQuizzes.reduce((map, quiz) => {
+        if (quiz.is_passed) {
+          map[quiz.course_slug] = true;
+        }
+        return map;
+      }, {})
+    : {};
+
+  // ✅ 3. DYNAMICALLY CALCULATE PROGRESS (Including Quizzes!)
   const enrichedCourses = courses.map((course, index) => {
-    // Count how many lessons in a specific course are marked complete
-    const lessonsDoneInThisCourse = course.lessons.filter(l => completedLessonsMap[`${course.id}-lesson-${l.id}`]).length;
+    const courseLessons = course.lessons || [];
     
-    // Calculate percentage (0 to 100)
-    const progress = Math.round((lessonsDoneInThisCourse / course.lessons.length) * 100) || 0;
+    // Count completed lessons using our robust map
+    const lessonsDoneInThisCourse = courseLessons.filter(l => 
+      completedLessonsMap[`${course.id}-lesson-${l.id}`] || 
+      completedLessonsMap[String(l.id)]
+    ).length;
     
-    // It's completed if progress is 100%
-   let isPrevCourseCompleted = false;
+    const isQuizPassed = passedQuizzesMap[course.id] === true;
+
+    // Calculate percentage: (Completed Lessons + Passed Quiz) / (Total Lessons + 1 Quiz)
+    const totalItems = courseLessons.length + 1;
+    const completedItems = lessonsDoneInThisCourse + (isQuizPassed ? 1 : 0);
+    
+    let progress = Math.round((completedItems / totalItems) * 100) || 0;
+    
+    // Safety net: If the quiz is passed, force the course to 100% complete
+    if (isQuizPassed) progress = 100;
+    
+    // Unlock the NEXT course only if the PREVIOUS course's quiz was passed
+    let isPrevCourseCompleted = false;
     if (index > 0) {
       const prevCourse = courses[index - 1];
-      const prevDone = prevCourse.lessons.filter(l => 
-        completedLessonsMap[`${prevCourse.id}-lesson-${l.id}`]
-      ).length;
-      isPrevCourseCompleted = (prevDone === prevCourse.lessons.length);
+      isPrevCourseCompleted = passedQuizzesMap[prevCourse.id] === true;
     }
 
-    //Unlocke if it's the first course or if the previous course in the array is 100% complete
-    const isUnlocked = index === 0 || isPrevCourseCompleted || 
-      course.id === currentCourseId;
+    // First course is always unlocked. Others unlock based on the previous course.
+    const isUnlocked = index === 0 || isPrevCourseCompleted;
 
     return {
       ...course,
@@ -98,7 +117,7 @@ const completedLessonsMap = Array.isArray(arrayLessons)
     };
   });
 
-  //Calculate dynamic stats for the Hero section
+  // Calculate dynamic stats for the Hero section
   const completedCourses = enrichedCourses.filter((c) => c.actualProgress === 100).length;
   const totalRequired = enrichedCourses.length;
   const overallProgress = Math.round((completedCourses / totalRequired) * 100) || 0;
@@ -148,7 +167,7 @@ const completedLessonsMap = Array.isArray(arrayLessons)
             {/* Stats Card */}
             <div className="bg-white/10 border border-white/20 rounded-xl p-8 w-full lg:w-[480px] shrink-0 mt-4 lg:mt-0 mr-10">
               <div className="items-center gap-3 mb-3">
-              <svg width="34px" height="64px" viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff" stroke-width="0.00024000000000000003"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 0C7.58172 0 4 3.58172 4 8C4 10.0289 4.75527 11.8814 6 13.2916V23C6 23.3565 6.18976 23.686 6.49807 23.8649C6.80639 24.0438 7.18664 24.0451 7.49614 23.8682L12 21.2946L16.5039 23.8682C16.8134 24.0451 17.1936 24.0438 17.5019 23.8649C17.8102 23.686 18 23.3565 18 23V13.2916C19.2447 11.8814 20 10.0289 20 8C20 3.58172 16.4183 0 12 0ZM6 8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8C18 11.3137 15.3137 14 12 14C8.68629 14 6 11.3137 6 8ZM16 14.9297C14.8233 15.6104 13.4571 16 12 16C10.5429 16 9.17669 15.6104 8 14.9297V21.2768L11.5039 19.2746C11.8113 19.0989 12.1887 19.0989 12.4961 19.2746L16 21.2768V14.9297Z" fill="#ffffff"></path> </g></svg>
+              <svg width="34px" height="64px" viewBox="0 0 24.00 24.00" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff" strokeWidth="0.00024000000000000003"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fillRule="evenodd" clipRule="evenodd" d="M12 0C7.58172 0 4 3.58172 4 8C4 10.0289 4.75527 11.8814 6 13.2916V23C6 23.3565 6.18976 23.686 6.49807 23.8649C6.80639 24.0438 7.18664 24.0451 7.49614 23.8682L12 21.2946L16.5039 23.8682C16.8134 24.0451 17.1936 24.0438 17.5019 23.8649C17.8102 23.686 18 23.3565 18 23V13.2916C19.2447 11.8814 20 10.0289 20 8C20 3.58172 16.4183 0 12 0ZM6 8C6 4.68629 8.68629 2 12 2C15.3137 2 18 4.68629 18 8C18 11.3137 15.3137 14 12 14C8.68629 14 6 11.3137 6 8ZM16 14.9297C14.8233 15.6104 13.4571 16 12 16C10.5429 16 9.17669 15.6104 8 14.9297V21.2768L11.5039 19.2746C11.8113 19.0989 12.1887 19.0989 12.4961 19.2746L16 21.2768V14.9297Z" fill="#ffffff"></path> </g></svg>
                 <p className="text-white font-semibold font-poppins text-[15px]">Educational Status</p>
               </div>
               <p className="text-blue-100 text-xs mb-3 leading-relaxed font-inter">
@@ -326,6 +345,7 @@ const completedLessonsMap = Array.isArray(arrayLessons)
 
 function CourseCard({ course, completedLessonsMap }) {
   const progressPercent = course.actualProgress;
+  const courseLessons = course.lessons || []; // Safety net
   
   return (
     <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all ${!course.isUnlocked ? 'opacity-70 grayscale-[0.3]' : ''}`}>
@@ -368,13 +388,13 @@ function CourseCard({ course, completedLessonsMap }) {
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
               <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
-            {course.lessons.length} lessons
+            {courseLessons.length} lessons
             <span>•</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
-            {course.lessons.reduce((acc, l) => acc + parseInt(l.duration), 0)} min total
+            {courseLessons.reduce((acc, l) => acc + parseInt(l.duration || 0), 0)} min total
           </div>
 
         
@@ -411,8 +431,9 @@ function CourseCard({ course, completedLessonsMap }) {
       {/* Lesson list preview */}
       <div className="border-t border-gray-50 px-6 py-3">
         <div className="flex flex-wrap gap-1.5">
-          {course.lessons.map((lesson, idx) => {
-            const isCompleted = completedLessonsMap[`${course.id}-lesson-${lesson.id}`]; 
+          {courseLessons.map((lesson, idx) => {
+            // Also checking the string ID fallback here!
+            const isCompleted = completedLessonsMap[`${course.id}-lesson-${lesson.id}`] || completedLessonsMap[String(lesson.id)]; 
             
             return (
               <div
