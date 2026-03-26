@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import { COMPLAINT_CATEGORIES } from "../utils/constants";
 import { submitAnonymousWhistleblower } from "../utils/logic-helpers";
 import { useAppContext } from "../context/AppContext";
@@ -79,6 +80,8 @@ export default function Whistleblowing() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         <Navbar />
+
+        <BackButton to="/dashboard" label="Back to Home" />
 
         <main className="max-w-[95%] mx-auto px-4 py-6">
           {/* Warning Banner */}

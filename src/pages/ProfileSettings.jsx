@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import BackButton from '../components/BackButton';
 import { useAppContext } from '../context/AppContext';
 
 // Toggle Component
@@ -633,6 +634,8 @@ export default function ProfileSettings() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-dark-bg-primary">
       <Navbar />
+
+      <BackButton to="/profile" label="Back to Profile" variant="gray" />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">

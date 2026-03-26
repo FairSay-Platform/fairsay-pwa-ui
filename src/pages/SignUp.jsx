@@ -400,7 +400,7 @@ const handleSubmit = async (e) => {
             {/* Get Started Button */}
             <button
               type="submit"
-              className="w-full h-[51px] flex items-center justify-center gap-2 rounded-[10px] bg-gradient-to-b from-fairsay-blue to-fairsay-teal font-inter font-semibold text-base leading-6 text-white hover:opacity-90 transition-opacity"
+              className="w-full h-[51px] flex items-center justify-center gap-2 rounded-[10px] bg-fairsay-blue font-inter font-semibold text-base leading-6 text-white px-4 py-3.5 hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-opacity"
             >
               Get started
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

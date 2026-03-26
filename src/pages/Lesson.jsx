@@ -1,6 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Logo from "../components/Logo";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import { 
   courses,
   workplaceHarassmentLessons,
@@ -158,6 +159,8 @@ export default function Lesson() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <Navbar />
+
+      <BackButton to="/learning" label="Back to Education Hub" />
 
       <main className="max-w-[95%] mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">

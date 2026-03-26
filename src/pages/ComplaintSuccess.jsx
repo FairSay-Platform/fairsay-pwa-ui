@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import Logo from "../components/Logo";
-import { useAppContext } from "../context/AppContext"; 
+import { useAppContext } from "../context/AppContext";
+import { BackButtonLink } from "../components/BackButton";
 
 const NEXT_STEPS = [
   {
@@ -60,8 +61,9 @@ export default function ComplaintSuccess() {
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
       {/* Header */}
       <header className="bg-white border-b border-[#E5E7EB] px-6 py-4">
-        <div className="max-w-[95%] mx-auto">
+        <div className="max-w-[95%] mx-auto flex items-center justify-between">
           <Logo />
+          <BackButtonLink to="/my-complaints" label="Back to Complaints" className="mr-4 lg:mr-8" />
         </div>
       </header>
 

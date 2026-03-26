@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import api from "../services/api";
 import { COMPLAINT_STATUS, COMPLAINT_STATUS_STYLES, COMPLAINT_STAT_CARDS, PRIORITY_LIST } from "../utils/constants";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import { useAppContext } from "../context/AppContext"; 
 
 export default function MyComplaints() {
@@ -117,6 +118,8 @@ export default function MyComplaints() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
       <Navbar />
+
+      <BackButton to="/dashboard" label="Back to Dashboard" maxWidth="max-w-[98%]" />
 
       <main className="max-w-[98%] mx-auto px-6 py-7">
         {/* Page header */}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import BackButton from '../components/BackButton';
 
 export default function DeleteAccount() {
   const [step, setStep] = useState(1); // 1: confirmation, 2: password verification, 3: final warning
@@ -37,6 +38,8 @@ export default function DeleteAccount() {
   return (
     <div className="min-h-screen bg-red-50 dark:bg-gray-900">
       <Navbar />
+
+      <BackButton to="/profile" label="Back to Profile" variant="gray" maxWidth="max-w-5xl" />
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Progress Indicator */}

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import { COMPLAINT_CATEGORIES, COMPLAINT_STEPS, IMPACT_TYPES, INITIAL_COMPLAINT_FORM_DATA } from "../utils/constants";
 import api from '../services/api';
 import { useAppContext } from "../context/AppContext"; 
@@ -649,6 +650,8 @@ export default function ComplaintForm() {
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] to-[#F1F5F9]">
       <Navbar />
 
+      <BackButton to="/my-complaints" label="Back to Complaints" />
+
       <main className="max-w-[95%] mx-auto px-6 py-8">
         {/* Hero banner */}
         <div
@@ -720,9 +723,9 @@ export default function ComplaintForm() {
             <button
               onClick={currentStep === 5 ? handleSubmit : handleNext}
               disabled={isProcessing}
-              className={`flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-white text-xs font-semibold transition-opacity 
+              className={`flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-white text-xs font-semibold transition-opacity bg-fairsay-blue 
                 ${isProcessing ? 'opacity-70 cursor-wait' : 'hover:opacity-90'}`}
-              style={{ background: 'linear-gradient(180deg, #1E3A8A 0%, #0F766E 100%)' }}
+              style={{}}
             >
               {currentStep === 5 
                 ? (isProcessing ? "Submitting..." : "Submit Complaint") 

@@ -4,6 +4,7 @@ import { useAppContext } from "../context/AppContext";
 import { askFairSayAI } from "../services/fs-services";
 import Navbar from "../components/Navbar";
 import ActionBanners from "../components/ActionBanners";
+import BackButton from "../components/BackButton";
 
 export default function AIAssistant() {
   const {user} = useAppContext();
@@ -102,7 +103,9 @@ export default function AIAssistant() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-     <Navbar />
+      <Navbar />
+
+      <BackButton to="/dashboard" label="Back to Dashboard" />
 
       <main className="max-w-[95%] mx-auto px-4 py-6">
         <ActionBanners />

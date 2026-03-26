@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { courses } from '../data/courses';
 import Navbar from '../components/Navbar';
+import BackButton from '../components/BackButton';
 import { useAppContext } from '../context/AppContext'; 
 
 function InfoField({ icon, value, editing, name, onChange }) {
@@ -142,6 +143,8 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-dark-bg-primary">
       <Navbar />
+
+      <BackButton to="/dashboard" label="Back to Dashboard" variant="gray" />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-6 items-start">

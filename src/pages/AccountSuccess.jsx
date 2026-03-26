@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Logo from "../components/Logo";
+import { BackButtonLink } from "../components/BackButton";
 
 const BG_IMAGE =
   "https://cdn.builder.io/api/v1/image/assets%2F40ba842052b14f65b01728244d7b3248%2F81332e25d9d740ffbec61ecdc30601f5";
@@ -7,6 +8,11 @@ const BG_IMAGE =
 export default function AccountSuccess() {
   return (
     <div className="min-h-screen relative flex items-center justify-center px-4 py-8">
+      <div className="absolute left-0 top-0 w-full max-w-[640px] mx-auto px-4 pt-6 z-20">
+        <div className="mb-4 flex justify-end">
+          <BackButtonLink to="/profile" label="Back to Profile" variant="gray" />
+        </div>
+      </div>
       <img
         src={BG_IMAGE}
         alt=""

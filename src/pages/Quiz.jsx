@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import { 
   courses,
   workplaceHarassmentLessons, workplaceHarassmentQuiz,
@@ -120,6 +121,8 @@ export default function Quiz() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <Navbar />
+
+      <BackButton to="/learning" label="Back to Education Hub" />
 
       <main className="max-w-[95%] mx-auto px-4 py-6">
         <div className="flex flex-col lg:flex-row gap-6">

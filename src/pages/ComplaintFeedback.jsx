@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 
 function StarRating({ label, sublabel }) {
   const [rating, setRating] = useState(0);
@@ -107,6 +108,8 @@ export default function ComplaintFeedback() {
   return (
     <div className="min-h-screen bg-[#F0F4F8]">
       <Navbar />
+
+      <BackButton to="/my-complaints" label="Back to Complaints" />
       
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-5">
         {/* Title */}

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { courses } from "../data/courses";
 import { useAppContext } from "../context/AppContext";
 import Navbar from "../components/Navbar";
+import BackButton from "../components/BackButton";
 import api from "../services/api";
 
 //Additional learning modules
@@ -100,6 +101,8 @@ const completedLessonsMap = Array.isArray(arrayLessons)
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <Navbar />
+
+      <BackButton to="/dashboard" label="Back to Dashboard" />
 
       <main className="max-w-[95%] mx-auto px-4 py-6">
         {/* Hero Section */}
