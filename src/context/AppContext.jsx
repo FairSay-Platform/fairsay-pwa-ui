@@ -149,7 +149,11 @@ export const AppProvider = ({ children }) => {
         redirectTo = "/admin/dashboard";
       } else if (!normalizedUser.profile_completed) {
         redirectTo = "/complete-profile";
-      }
+      } else if (
+  normalizedUser.verification_status === "not_submitted"
+) {
+  redirectTo = "/employee-verification";
+}
 
       return { success: true, user: normalizedUser, redirectTo }; 
 
