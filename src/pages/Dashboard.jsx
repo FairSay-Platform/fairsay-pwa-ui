@@ -34,23 +34,23 @@ export default function Dashboard() {
   useEffect(() => {
     if (user?.id) {
       try {
+        // 1. Handle Recent Activity Logs
         const storedLogs = localStorage.getItem('fs_logs');
         const allLogs = storedLogs ? JSON.parse(storedLogs) : [];
         
         if (Array.isArray(allLogs)) {
           const userLogs = allLogs.filter(log => log && log.userId === user.id);
           setActivities([...userLogs].reverse().slice(0, 5));
-
-          const aiSessions = userLogs.filter(log => 
-            log.action?.includes("AI") || 
-            log.action?.includes("Chat") || 
-            log.action?.includes("Consultation")
-          );
-          setAiCount(aiSessions.length);
         }
+
+        // 2. Handle AI Consultations Count (Direct sync with AIAssistant.jsx)
+        const aiConsults = parseInt(localStorage.getItem('fs_ai_consults') || '0');
+        setAiCount(aiConsults);
+
       } catch (error) {
         console.error("Failed to parse logs:", error);
         setActivities([]); 
+        setAiCount(0);
       }
     }
   }, [user]);
