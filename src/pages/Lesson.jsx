@@ -61,7 +61,7 @@ useEffect(() => {
 
       
       arrayLessons.forEach(lesson => {
-        if (lesson.course_slug === courseId_) {
+        if (lesson.course_slug === courseId_ || String(lesson.course_id) === String(courseId_)) {
           
           if (lesson.lesson_number) {
             dbCompletedForThisCourse.push(parseInt(lesson.lesson_number));
@@ -148,7 +148,7 @@ useEffect(() => {
   }
 
   // Calculate real progress dynamically based on current module's length
-  const progress = Math.round((completedLessons.length / lessons.length) * 100);
+  const progress = Math.min(Math.round((completedLessons.length / lessons.length) * 100), 100);
   const isCurrentLessonCompleted = completedLessons.includes(lesson.id);
 
   
@@ -174,7 +174,7 @@ useEffect(() => {
 
       //Local storage logic
       const stored = JSON.parse(localStorage.getItem(`fs_course_${courseId_}`) || '[]');
-      const updatedLessons = [...stored, currentId];
+      const updatedLessons = Array.from(new Set([...stored, currentId]));
       localStorage.setItem(`fs_course_${courseId_}`, JSON.stringify(updatedLessons));
       setCompletedLessons(updatedLessons);
       

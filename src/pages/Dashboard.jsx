@@ -20,6 +20,8 @@ export default function Dashboard() {
   const [complaintStats, setComplaintStats] = useState({ active: 0, resolved: 0});
   const [aiCount, setAiCount] = useState(0);
 
+  const isUserVerified = user?.isVerified === true || user?.verification_status === 'approved' || user?.employee_verified === true;
+
   //Dynamic Learning State synced directly to the DB
   const [learningData, setLearningData] = useState({
     enrichedCourses: courses.map((c, i) => ({ ...c, actualProgress: 0, isUnlocked: i === 0 })),
@@ -88,7 +90,10 @@ export default function Dashboard() {
         }, {});
 
         const passedQuizzesMap = (learnRes.data?.quizStatuses || []).reduce((map, quiz) => {
-          if (quiz.is_passed) map[quiz.course_slug] = true;
+          if (quiz.is_passed) {
+            if (quiz.course_slug) map[quiz.course_slug] = true;
+            if (quiz.course_id) map[String(quiz.course_id)] = true; // Catches numeric IDs
+          }
           return map;
         }, {});
 
@@ -97,19 +102,22 @@ export default function Dashboard() {
           const courseLessons = course.lessons || [];
           const lessonsDone = courseLessons.filter(l => 
             completedLessonsMap[`${course.id}-lesson-${l.id}`] || 
+            completedLessonsMap[`${course.slug}-lesson-${l.id}`] || // Fallback for slug
             completedLessonsMap[String(l.id)]
           ).length;
           
-          const isQuizPassed = passedQuizzesMap[course.id] === true;
+          // Check both ID and Slug
+          const isQuizPassed = passedQuizzesMap[course.id] === true || passedQuizzesMap[course.slug] === true;
           const totalItems = courseLessons.length + 1;
           const completedItems = lessonsDone + (isQuizPassed ? 1 : 0);
           
           let prog = Math.round((completedItems / totalItems) * 100) || 0;
-          if (isQuizPassed) prog = 100;
+          if (isQuizPassed) prog = 100; // Force 100% if quiz is passed
           
           let isPrevCourseCompleted = false;
           if (index > 0) {
-            isPrevCourseCompleted = passedQuizzesMap[courses[index - 1].id] === true;
+            const prevCourse = courses[index - 1];
+            isPrevCourseCompleted = passedQuizzesMap[prevCourse.id] === true || passedQuizzesMap[prevCourse.slug] === true;
           }
           const isUnlocked = index === 0 || isPrevCourseCompleted;
 
@@ -203,7 +211,7 @@ export default function Dashboard() {
                   desc="Report a workplace rights violation" 
                   btnText="Start Complaint" 
                   color="bg-gradient-to-br from-[#1E3A8A] to-[#1447E6]" 
-                  locked={ !user?.isVerified || learningData.overallProgress < 100 } 
+                  locked={ !isUserVerified || learningData.overallProgress < 100 } 
                   onClick={() => navigate('/file-complaint')} 
                 />
                 
