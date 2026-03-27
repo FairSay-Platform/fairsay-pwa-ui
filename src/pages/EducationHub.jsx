@@ -80,7 +80,8 @@ export default function EducationHub() {
   const passedQuizzesMap = Array.isArray(arrayQuizzes)
     ? arrayQuizzes.reduce((map, quiz) => {
         if (quiz.is_passed) {
-          map[quiz.course_slug] = true;
+          if (quiz.course_slug) map[quiz.course_slug] = true;
+          if (quiz.course_id) map[String(quiz.course_id)] = true;
         }
         return map;
       }, {})
@@ -90,13 +91,15 @@ export default function EducationHub() {
   const enrichedCourses = courses.map((course, index) => {
     const courseLessons = course.lessons || [];
     
-    // Count completed lessons using our robust map
+    // Count completed lessons using our robust map (Check both ID and Slug)
     const lessonsDoneInThisCourse = courseLessons.filter(l => 
       completedLessonsMap[`${course.id}-lesson-${l.id}`] || 
+      completedLessonsMap[`${course.slug}-lesson-${l.id}`] || // Fallback for slug
       completedLessonsMap[String(l.id)]
     ).length;
     
-    const isQuizPassed = passedQuizzesMap[course.id] === true;
+    // Check both ID and Slug for the quiz
+    const isQuizPassed = passedQuizzesMap[course.id] === true || passedQuizzesMap[course.slug] === true;
 
     // Calculate percentage: (Completed Lessons + Passed Quiz) / (Total Lessons + 1 Quiz)
     const totalItems = courseLessons.length + 1;
@@ -111,7 +114,7 @@ export default function EducationHub() {
     let isPrevCourseCompleted = false;
     if (index > 0) {
       const prevCourse = courses[index - 1];
-      isPrevCourseCompleted = passedQuizzesMap[prevCourse.id] === true;
+      isPrevCourseCompleted = passedQuizzesMap[prevCourse.id] === true || passedQuizzesMap[prevCourse.slug] === true;
     }
 
     // First course is always unlocked. Others unlock based on the previous course.

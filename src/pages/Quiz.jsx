@@ -45,6 +45,7 @@ export default function Quiz() {
   
   const [answers, setAnswers] = useState({});
   const [quizState, setQuizState] = useState("taking");
+  const [hasPassedBefore, setHasPassedBefore] = useState(false);
 
   const courseId_ = courseId || "workplace-harassment";
   
@@ -57,11 +58,43 @@ export default function Quiz() {
   //Backend progress logic
   const currentCourseIndex = courses.findIndex(c => c.id === courseId_);
   const nextCourseId = courses[currentCourseIndex + 1]?.id;
-  const completedCount = user?.lessons_completed || 0;
   
-  //Pass if the completed count is higher than this course's index
-  const hasPassedBefore = completedCount > currentCourseIndex;
-  const progress = hasPassedBefore ? 100 : 0;
+  // ✅ NEW: Fetch real-time quiz status from the DB on load
+  useEffect(() => {
+    const fetchQuizStatus = async () => {
+      try {
+        if (user && !user.id?.toString().startsWith('dev-')) {
+          const res = await api.get('/learning/state', {
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache',
+              'Expires': '0',
+            }
+          });
+          
+          const arrayQuizzes = res.data?.quizStatuses || [];
+          
+          // Bulletproof check for both Slug and ID
+          const passed = arrayQuizzes.some(q => 
+            q.is_passed === true && 
+            (q.course_slug === courseId_ || String(q.course_id) === String(courseId_))
+          );
+          
+          setHasPassedBefore(passed);
+        }
+      } catch (err) {
+        console.error("Failed to fetch accurate quiz status:", err);
+      }
+    };
+
+    fetchQuizStatus();
+  }, [courseId_, user]);
+  
+  // ✅ FIXED: Accurately calculate progress based on lessons vs quiz
+  const totalItems = lessons.length + 1; // Lessons + 1 Quiz
+  const progress = hasPassedBefore 
+    ? 100 
+    : Math.round((lessons.length / totalItems) * 100);
 
   const handleSelect = (questionId, optionIdx) => {
     if (quizState === "submitted") return;
