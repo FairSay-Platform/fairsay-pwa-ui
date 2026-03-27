@@ -38,15 +38,15 @@ sessionStorage.setItem('fs_skip_onboarding', 'true');
     setIsSubmitting(true);
 
     const payload = {
-      job_title: formData.jobTitle,
-      department: formData.department,
-      company_name: formData.companyName,
-      phone: formData.phoneNumber,
-      phone_number: formData.phoneNumber,
-      location: formData.location,
+      job_title: formData.jobTitle || null,
+      department: formData.department || null,
+      company_name: formData.companyName || null,
+      phone: formData.phoneNumber || null,
+      phone_number: formData.phoneNumber || null, // Keeping both just in case her backend needs one or the other!
+      location: formData.location || null,
       profile_completed: true 
     };
-
+    
     const success = await updateUser(payload);
 
     setIsSubmitting(false);

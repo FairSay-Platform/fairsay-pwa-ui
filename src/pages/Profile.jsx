@@ -166,16 +166,16 @@ export default function Profile() {
   async function handleSave() {
     setIsSaving(true);
     
-    const payload = {
-      first_name: editData.firstName,
-      last_name: editData.lastName,
-      phone: editData.phone, // Successfully matches the backend requirements
-      location: editData.location,
-      company_name: editData.company,
-      job_title: editData.jobTitle,
-      department: editData.department,
-      employee_id: editData.employeeId,
-      bio: editData.bio
+   const payload = {
+      first_name: editData.firstName || null,
+      last_name: editData.lastName || null,
+      phone: editData.phone || null,
+      location: editData.location || null,
+      company_name: editData.company || null,
+      job_title: editData.jobTitle || null,
+      department: editData.department || null,
+      employee_id: editData.employeeId || null,
+      bio: editData.bio || null
     };
 
     const success = await updateUser(payload);
