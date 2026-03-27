@@ -39,7 +39,7 @@ export default function AIAssistant() {
   const faqs = [
     {
       question: "What is the federal minimum wage?",
-      answer: "The federal minimum wage is $7.25 per hour, though many states have higher minimum wages that take precedence.",
+      answer: "The federal minimum wage is N70,000 per month, though some states have higher minimum wages that take precedence.",
     },
     {
       question: "Am I entitled to overtime pay?",
@@ -65,6 +65,9 @@ export default function AIAssistant() {
 
   const handleSendMessage = async (text) => {
     if (!text.trim()) return;
+
+    const currentCount = parseInt(localStorage.getItem('fs_ai_consults') || '0');
+    localStorage.setItem('fs_ai_consults', (currentCount + 1).toString());
 
     setMessages((prev) => [...prev, { type: "user", text }]);
     setInputValue("");
