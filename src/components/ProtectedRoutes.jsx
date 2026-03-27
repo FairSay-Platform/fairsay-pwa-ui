@@ -66,7 +66,8 @@ const ProtectedRoutes = ({ children, requireAdmin = false, step }) => {
         
         //Requires education
         if (step === USER_STATUS.EDUCATION && !user.course_completed && !user.educated) {
-            return <Navigate to="/learning" replace />;
+            //Commented out for the demo
+            //return <Navigate to="/learning" replace />;
         }
     }
 
