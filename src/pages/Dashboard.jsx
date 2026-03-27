@@ -63,9 +63,9 @@ export default function Dashboard() {
       try {
         // Fetch Complaints
         const compRes = await api.get('/complaints/my-complaints');
-        if (compRes.data.success) {
+        if (compRes.data && compRes.data.complaints) {
           const allComplaints = compRes.data.complaints || [];
-          const activeCount = allComplaints.filter(c => c.status === 'pending' || c.status === 'in_progress').length;
+          const activeCount = allComplaints.filter(c => ['pending', 'in_progress', 'submitted'].includes(c.status)).length;
           const resolvedCount = allComplaints.filter(c => c.status === 'resolved').length;
           setComplaintStats({ active: activeCount, resolved: resolvedCount });
         }

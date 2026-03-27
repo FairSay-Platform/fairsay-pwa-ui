@@ -27,7 +27,7 @@ export default function MyComplaints() {
       try {
         const res = await api.get('/complaints/my-complaints');
 
-        if (res.data.success) {
+        if (res.data && res.data.complaints) {
           const formattedComplaints = res.data.complaints.map(c => {
             const styles = getStatusStyles(c.status);
             return {
